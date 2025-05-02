@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ListAllGamesAPI } from '../../API_handler';
-
+import Loader from '../../components/Loader/Loader';
 const AdminDashboard = () => {
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
   
   // Mock data for demonstration
   const [adminProfile , setAdminProfile] = useState({
@@ -24,7 +25,9 @@ const AdminDashboard = () => {
   const [activeGames, setActiveGames] = useState([]);
 
   useEffect(()=>{
+    setLoading(true);
    ListAllGamesAPI().then((res)=>{
+
       if(res && res.length > 0){
         //count booked seats and pending requests
         const updatedGames = res.map((game) => {
@@ -43,6 +46,8 @@ const AdminDashboard = () => {
    }).catch((err)=>{
       console.error(err);
       setActiveGames([]);
+   }).finally(()=>{
+    setLoading(false);
    })
   },[])
 
@@ -65,6 +70,13 @@ const AdminDashboard = () => {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader />
+      </div>
+    );
+  }
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Admin Profile Section */}

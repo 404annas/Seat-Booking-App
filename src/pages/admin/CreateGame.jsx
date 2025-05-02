@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom'; // Adjust the import path as necessary
 import { CreateGameAPI } from '../../API_handler';
-
+import Loader from '../../components/Loader/Loader';
 const CreateGame = () => {
   const navigate = useNavigate();
   const [gameDetails, setGameDetails] = useState({
@@ -17,6 +17,7 @@ const CreateGame = () => {
 
   const [showPriceSettings, setShowPriceSettings] = useState(false);
   const [universalPaidPrice, setUniversalPaidPrice] = useState(0);
+  const [loading, setLoading] = useState(false);
 
   const handleNumberOfSeatsChange = (e) => {
     const numSeats = parseInt(e.target.value) || 0;
@@ -74,6 +75,7 @@ const CreateGame = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    setLoading(true);
     if(gameDetails.totalSeats < gameDetails.freeSeats + gameDetails.paidSeats) {
       alert("Total seats cannot be less than the sum of free and paid seats.");
       return;
@@ -98,9 +100,18 @@ const CreateGame = () => {
         navigate('/admin/dashboard');
       }).catch((err) => {
         console.error(err);
+      }).finally(()=>{
+        setLoading(false);
       })
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader />
+      </div>
+    );
+  }
   return (
     <div className="min-h-screen bg-gray-100 p-6">
       <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-md p-8">

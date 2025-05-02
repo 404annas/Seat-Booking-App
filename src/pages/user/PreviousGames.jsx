@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GetAllNonActiveGames } from '../../API_handler';
-
+import Loader from '../../components/Loader/Loader';
 const PreviousGames = () => {
   const navigate = useNavigate();
   // Mock data for demonstration
   const [games, setGames] = useState([ ]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(()=>{
+    setLoading(true);
    GetAllNonActiveGames().then((res)=>{
     if(res.status === 200){
       
@@ -24,11 +26,18 @@ const PreviousGames = () => {
     else{
       alert("Error fetching games");
     }
+   }).finally(()=>{ 
+    setLoading(false);
    })
   },[])
 
-
-
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-100 p-6">

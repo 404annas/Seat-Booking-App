@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { UserLogin, UserRegister } from '../../API_handler';
-
+import Loader from '../../components/Loader/Loader';
 const UserAuth = () => {
   const navigate = useNavigate();
   const [isLogin, setIsLogin] = useState(true);
@@ -12,6 +12,7 @@ const UserAuth = () => {
     confirmPassword: '',
     role : 'user'
   });
+  const [loading, setLoading] = useState(false);
 
   //check if the user is already logged in
   useEffect(()=>{
@@ -43,6 +44,7 @@ const UserAuth = () => {
     }
 
     if(isLogin) {
+      setLoading(true);
       UserLogin(formData).then((res)=>{
        if(res.status === 200) {
          localStorage.setItem('token', res.data.token);
@@ -54,11 +56,15 @@ const UserAuth = () => {
           alert("User login failed!");
         }
       }).catch(e=>{
+        alert("User login failed!");
         console.log(e);
+      }).finally(()=>{
+        setLoading(false);
       })
     }
 
     if(!isLogin) {
+      setLoading(true);
       UserRegister(formData).then((res)=>{
        if(res.status === 201) {
           alert("User registered successfully!");
@@ -67,12 +73,21 @@ const UserAuth = () => {
         else {
           alert("User registration failed!");
         }
+      }).finally(()=>{
+        setLoading(false);
       })
     }
     // Handle authentication logic here
     // For demo purposes, we'll just navigate to the games page
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader />
+      </div>
+    );
+  }
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center">
       <div className="bg-white p-8 rounded-lg shadow-md w-96">

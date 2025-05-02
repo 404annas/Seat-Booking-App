@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { GetLeaderboardAPI } from '../API_handler';
-
+import Loader from '../components/Loader/Loader';
 const Leaderboard = () => {
   const {gameId} = useParams(); // Assuming you are using react-router-dom for routing
   const navigate = useNavigate();
   // Mock data for demonstration
   const [leaderboardData, setLeaderboardData] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   const [isAdmin , setAdmin] = useState(false);
 
@@ -16,6 +17,7 @@ const Leaderboard = () => {
   },[])
 
   useEffect(()=>{
+    setLoading(true);
   GetLeaderboardAPI(gameId).then((res)=>{
     if(res && res.data.length > 0){
       const updatedLeaderboard = res.data.map((user) => {
@@ -30,10 +32,19 @@ const Leaderboard = () => {
     }else{
       setLeaderboardData([]);
     }
+  }).finally(()=>{
+    setLoading(false);
   })
 
   },[])
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader />
+      </div>
+    );
+  }
   return (
     <div className="min-h-screen bg-gray-100 p-6">
       <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-md p-8">

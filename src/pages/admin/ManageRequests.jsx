@@ -1,17 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { GetGameById, RequestStatusUpdate } from '../../API_handler';
-
+import Loader from '../../components/Loader/Loader';
 
 const ManageRequests = () => {
   // Mock data for demonstration
   const {gameId} = useParams();
   const [requests, setRequests] = useState([]);
  const navigate = useNavigate();
-
+ const [loading, setLoading] = useState(false);
   
 
   const handleApprove = (id) => {
+    setLoading(true);
     RequestStatusUpdate(id, 'approved').then((res)=>{
       if(res && res.status === 200){
         setRequests((prevRequests) => prevRequests.filter((request) => request.id !== id));
@@ -20,11 +21,13 @@ const ManageRequests = () => {
       }
     }).catch((err)=>{
       console.error(err);
-    }
-    )
+    }).finally(()=>{
+      setLoading(false);
+    })
   };
 
   const handleReject = (id) => {
+    setLoading(true);
    RequestStatusUpdate(id, 'rejected').then((res)=>{
       if(res && res.status === 200){
         setRequests((prevRequests) => prevRequests.filter((request) => request.id !== id));
@@ -33,11 +36,12 @@ const ManageRequests = () => {
       }
     }).catch((err)=>{
       console.error(err);
-    }
-    )
+    }).finally(()=>{
+      setLoading(false);
+    })
   };
 
-  useEffect(()=>{
+    useEffect(()=>{
     GetGameById(gameId).then((res)=>{
        if(res && res.data.Pending_Requests.length > 0){
          const updatedRequests = res.data.Pending_Requests.map((request) => {
@@ -52,13 +56,19 @@ const ManageRequests = () => {
        }else{
          setRequests([]);
        }
-     }
-     ).catch((err)=>{
+     }).catch((err)=>{
        console.error(err);
        setRequests([]);
     })
    },[gameId,handleApprove,handleReject]);
  
+   if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-100 p-6">

@@ -1,14 +1,16 @@
 import React, { useState, useEffect} from 'react';
 import { EndGameManually, GetGameById } from '../../API_handler';
 import { useNavigate, useParams } from 'react-router-dom';
-
+import Loader from '../../components/Loader/Loader';
 const GameControl = () => {
   // Mock data for demonstration
   const {gameId} = useParams();
   const navigate = useNavigate();
   const [gameStats, setGameStats] = useState({});
+  const [loading, setLoading] = useState(false);
 
 useEffect(() => {
+  setLoading(true);
    GetGameById(gameId).then((res)=>{
     if(res && res.status === 200){
       const bookedSeats = res.data.seats.filter(seat => seat.isOccupied === true ).length;
@@ -23,8 +25,9 @@ useEffect(() => {
     }
    }).catch((e)=>{
     console.log(e);
-   }
-  )
+   }).finally(()=>{
+    setLoading(false);
+   })
 },[])
 
 
@@ -37,6 +40,13 @@ useEffect(() => {
    })
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader />
+      </div>
+    );
+  }
   return (
     <div className="min-h-screen bg-gray-100 p-6">
       <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-md p-8">

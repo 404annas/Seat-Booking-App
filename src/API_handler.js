@@ -1,6 +1,6 @@
-const Base_URL =  import.meta.env.Base_URL  || "http://localhost:5001/api"; 
+const Base_URL =  import.meta.env.VITE_Base_URL  || "http://localhost:5001/api"; 
 import axios from "axios";
-
+console.log(import.meta.env.VITE_Base_URL );
 
 //user login and register
 export const UserLogin = async (userData) => {

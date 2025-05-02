@@ -1,13 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GetAllActiveGames, MakeRequestAPI } from '../../API_handler';
-
+import Loader from '../../components/Loader/Loader';
 const AvailableGames = () => {
   const navigate = useNavigate();
   // Mock data for demonstration
   const [games, setGames] = useState([ ]);
+  const [loading, setLoading] = useState(false);
+
 
   useEffect(()=>{
+    setLoading(true);
    GetAllActiveGames().then((res)=>{
     if(res.status === 200){
       console.log(res.data);
@@ -16,7 +19,7 @@ const AvailableGames = () => {
         name: game.gameId,
         availableSeats: game.seats.filter(seat => seat.isOccupied === false).length,
         totalSeats: game.totalSeats,
-        requestStatus: game.Pending_Requests.find(user => user.userId === localStorage.getItem('userId')).status === 'rejected' ? 'rejected': game.Approved_Users.find(user => user._id === localStorage.getItem('userId')) ? 'approved': null ,
+        requestStatus: game.Pending_Requests.find(user => user.userId === localStorage.getItem('userId'))?.status === 'rejected' ? 'rejected': game.Approved_Users.find(user => user._id === localStorage.getItem('userId')) ? 'approved': null ,
         status: game.status
       })));
       
@@ -24,6 +27,8 @@ const AvailableGames = () => {
     else{
       alert("Error fetching games");
     }
+   }).finally(()=>{
+    setLoading(false);
    })
   },[])
   console.log(games);
@@ -46,6 +51,13 @@ const AvailableGames = () => {
     // Navigate to request pending page
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader />
+      </div>
+    );
+  }
   return (
     <div className="min-h-screen bg-gray-100 p-6">
       <div className="max-w-4xl mx-auto">

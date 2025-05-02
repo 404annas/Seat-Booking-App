@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { UserLogin } from '../../API_handler';
-
+import Loader from '../../components/Loader/Loader';
 const AdminLogin = () => {
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
   const [credentials, setCredentials] = useState({
     username: '',
     password: '',
@@ -12,6 +13,7 @@ const AdminLogin = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    setLoading(true);
     // Handle login logic here
     UserLogin(credentials).then((res) =>{
       if(res.status === 200){
@@ -23,9 +25,20 @@ const AdminLogin = () => {
       }else{
         alert(res.data.message);
       }
-    } )
+    }).catch((err)=>{
+      console.log(err);
+    }).finally(()=>{
+      setLoading(false);
+    })
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader />
+      </div>
+    );
+  }
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center">
       <div className="bg-white p-8 rounded-lg shadow-md w-96">

@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ListAllSeats } from '../../API_handler';
-
+import Loader from '../../components/Loader/Loader';
 const MonitorSeats = () => {
   const {gameId} = useParams(); // Assuming gameId is passed as a URL parameter
   const navigate = useNavigate()
+  const [loading, setLoading] = useState(false);
   // Mock data for demonstration
   const [seats, setSeats] = useState(
     Array.from({ length: 20 }, (_, i) => ({
@@ -15,7 +16,7 @@ const MonitorSeats = () => {
   );
 
   useEffect(()=>{
-
+    setLoading(true);
     ListAllSeats(gameId).then((res)=>{
       if(res.status === 200 ){
         const updatedSeats = res.data.map((seat) => {
@@ -29,9 +30,9 @@ const MonitorSeats = () => {
       }else{
         console.error("Error fetching seats data");
       }
+    }).finally(()=>{
+      setLoading(false);
     })
-  
-
   },[])
 
   const getSeatColor = (status) => {
@@ -45,6 +46,13 @@ const MonitorSeats = () => {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader />
+      </div>
+    );
+  }
   return (
     <div className="min-h-screen bg-gray-100 p-6">
       <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-md p-8">
