@@ -1,108 +1,202 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom'; // Adjust the import path as necessary
+import { useNavigate } from 'react-router-dom';
 import { CreateGameAPI } from '../../API_handler';
 import Loader from '../../components/Loader/Loader';
+
 const CreateGame = () => {
   const navigate = useNavigate();
-  const [gameDetails, setGameDetails] = useState({
+  const initialGameState = {
     gameName: '',
-    totalSeats: null,
-    freeSeats: null,
-    paidSeats: null,
-    seats: [
-      { seatNumber: null, price: 0, gift: null, isPaid: false }
-    ],
-    defaultPrice: 0,
-  });
+    totalSeats: '',
+    freeSeats: '',
+    paidSeats: '',
+    seats: [],
+    defaultPrice: ''
+  };
 
+  const [gameDetails, setGameDetails] = useState(initialGameState);
   const [showPriceSettings, setShowPriceSettings] = useState(false);
-  const [universalPaidPrice, setUniversalPaidPrice] = useState(0);
+  const [universalPaidPrice, setUniversalPaidPrice] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleNumberOfSeatsChange = (e) => {
-    const numSeats = parseInt(e.target.value) || 0;
-    setGameDetails(prev => ({
-      ...prev,
-      totalSeats: numSeats,
-      seats: Array.from({ length: numSeats }, (_, index) => ({
-        seatNumber: index + 1,
-        price: 0,
-        gift: " ",
-        isPaid: false
-      })),
-    }));
+    const numSeats = e.target.value === '' ? '' : parseInt(e.target.value);
+    if (numSeats === '' || (numSeats >= 0 && numSeats <= 100)) {
+      setGameDetails(prev => ({
+        ...prev,
+        totalSeats: numSeats,
+        freeSeats: '', // Reset free seats when total changes
+        paidSeats: '', // Reset paid seats when total changes
+        seats: numSeats ? Array.from({ length: numSeats }, (_, index) => ({
+          seatNumber: index + 1,
+          price: '',
+          gift: '',
+          isPaid: false
+        })) : []
+      }));
+      setUniversalPaidPrice('');
+    }
   };
 
-  const handleDefaultPriceChange = (e) => {
-    const price = parseInt(e.target.value) || 0;
+  const handleFreeSeatsChange = (e) => {
+    const freeSeatsCount = e.target.value === '' ? '' : parseInt(e.target.value);
+    const totalSeats = parseInt(gameDetails.totalSeats) || 0;
+    
+    if (freeSeatsCount === '' || (freeSeatsCount >= 0 && freeSeatsCount <= totalSeats)) {
+      // Calculate paid seats automatically
+      const calculatedPaidSeats = freeSeatsCount === '' ? '' : 
+                                (totalSeats >= freeSeatsCount ? totalSeats - freeSeatsCount : 0);
+      
+      setGameDetails(prev => ({
+        ...prev,
+        freeSeats: freeSeatsCount,
+        paidSeats: calculatedPaidSeats,
+        // Keep existing seat configurations
+        seats: prev.seats.map(seat => ({
+          ...seat,
+          isPaid: false,
+          price: ''
+        }))
+      }));
+    }
+  };
+
+  const handlePaidSeatsChange = (e) => {
+    const paidSeatsCount = e.target.value === '' ? '' : parseInt(e.target.value);
+    const totalSeats = parseInt(gameDetails.totalSeats) || 0;
+    
+    if (paidSeatsCount === '' || (paidSeatsCount >= 0 && paidSeatsCount <= totalSeats)) {
+      // Don't automatically update free seats, just update paid seats
+      setGameDetails(prev => ({
+        ...prev,
+        paidSeats: paidSeatsCount
+      }));
+    }
+  };
+
+  const handleSeatStatusChange = (index, isPaid) => {
+    const paidSeatsCount = gameDetails.seats.filter((seat, i) => i !== index && seat.isPaid).length + (isPaid ? 1 : 0);
+    const totalPaidSeats = parseInt(gameDetails.paidSeats) || 0;
+
+    if (isPaid && paidSeatsCount > totalPaidSeats) {
+      alert(`You can only select ${totalPaidSeats} paid seats`);
+      return;
+    }
+
     setGameDetails(prev => ({
       ...prev,
-      defaultPrice: price,
-      seats: prev.seats.map(seat => ({ ...seat, price: seat.isPaid ? universalPaidPrice : 0 }))
+      seats: prev.seats.map((seat, i) => 
+        i === index ? { 
+          ...seat, 
+          isPaid,
+          price: isPaid ? (universalPaidPrice || '') : ''
+        } : seat
+      )
     }));
   };
 
   const handleUniversalPaidPriceChange = (e) => {
-    const price = parseInt(e.target.value) || 0;
-    setUniversalPaidPrice(price);
-    setGameDetails(prev => ({
-      ...prev,
-      seats: prev.seats.map(seat => ({ 
-        ...seat, 
-        price: seat.isPaid ? price : 0 
-      }))
-    }));
-  };
-
-  const handleSeatPaidChange = (index, isPaid) => {
-    setGameDetails(prev => ({
-      ...prev,
-      seats: prev.seats.map((seat, i) => ({
-        ...seat,
-        isPaid: i === index ? isPaid : seat.isPaid,
-        price: i === index ? (isPaid ? universalPaidPrice : 0) : seat.price
-      }))
-    }));
+    const price = e.target.value === '' ? '' : parseInt(e.target.value);
+    if (price === '' || price >= 0) {
+      setUniversalPaidPrice(price);
+      setGameDetails(prev => ({
+        ...prev,
+        seats: prev.seats.map(seat => ({ 
+          ...seat, 
+          price: seat.isPaid ? (price || '') : ''
+        }))
+      }));
+    }
   };
 
   const handleSeatPriceChange = (index, price) => {
-    const parsedPrice = parseInt(price) || 0;
-    setGameDetails(prev => ({
-      ...prev,
-      seats: prev.seats.map((seat, i) => (i === index ? { ...seat, price: parsedPrice } : seat)),
-    }));
+    const parsedPrice = price === '' ? '' : parseInt(price);
+    if (parsedPrice === '' || parsedPrice >= 0) {
+      setGameDetails(prev => ({
+        ...prev,
+        seats: prev.seats.map((seat, i) => 
+          i === index ? { ...seat, price: parsedPrice || '' } : seat
+        )
+      }));
+    }
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     setLoading(true);
-    if(gameDetails.totalSeats < gameDetails.freeSeats + gameDetails.paidSeats) {
-      alert("Total seats cannot be less than the sum of free and paid seats.");
-      return;
+
+    const validationErrors = [];
+    
+    // Basic field validation
+    if (!gameDetails.gameName.trim()) {
+      validationErrors.push("Game name is required");
     }
-    if(gameDetails.totalSeats <= 0) {
-      alert("Please enter a valid number of seats.");
+    
+    if (!gameDetails.totalSeats) {
+      validationErrors.push("Total seats is required");
+    }
+
+    const totalSeats = parseInt(gameDetails.totalSeats) || 0;
+    const freeSeats = parseInt(gameDetails.freeSeats) || 0;
+    const paidSeats = parseInt(gameDetails.paidSeats) || 0;
+    
+    // Validate seat numbers
+    if (totalSeats <= 0) {
+      validationErrors.push("Please enter a valid number of seats");
+    }
+
+    if (freeSeats < 0 || paidSeats < 0) {
+      validationErrors.push("Number of free and paid seats cannot be negative");
+    }
+
+    // Strict validation for seat counts
+    if (freeSeats + paidSeats !== totalSeats) {
+      validationErrors.push(`Total seats (${totalSeats}) must equal sum of free (${freeSeats}) and paid seats (${paidSeats})`);
+    }
+
+    // Validate paid seats have prices
+    const paidSeatsWithoutPrice = gameDetails.seats.filter(
+      seat => seat.isPaid && (!seat.price && seat.price !== 0)
+    );
+    
+    if (paidSeatsWithoutPrice.length > 0) {
+      validationErrors.push("All paid seats must have a price set");
+    }
+
+    // Validate selected paid seats match the count
+    const selectedPaidSeats = gameDetails.seats.filter(seat => seat.isPaid).length;
+    if (selectedPaidSeats !== paidSeats) {
+      validationErrors.push(`Number of selected paid seats (${selectedPaidSeats}) must match the specified paid seats count (${paidSeats})`);
+    }
+
+    if (validationErrors.length > 0) {
+      alert(validationErrors.join("\n"));
+      setLoading(false);
       return;
     }
 
-    if(gameDetails.freeSeats < 0 || gameDetails.paidSeats < 0) {
-      alert("Number of free and paid seats cannot be negative.");
-      return;
-    }
-    if(gameDetails.freeSeats + gameDetails.paidSeats > gameDetails.totalSeats) {
-      alert("Total seats cannot be less than the sum of free and paid seats.");
-      return;
-    }
+    // Prepare data for API
+    const gameData = {
+      ...gameDetails,
+      seats: gameDetails.seats.map(seat => ({
+        ...seat,
+        price: seat.isPaid ? (seat.price || 0) : 0,
+        gift: seat.gift || ''
+      }))
+    };
 
-    CreateGameAPI(gameDetails)
-      .then((res) =>{
+    CreateGameAPI(gameData)
+      .then((res) => {
         alert(res.message);
         navigate('/admin/dashboard');
-      }).catch((err) => {
-        console.error(err);
-      }).finally(()=>{
-        setLoading(false);
       })
+      .catch((err) => {
+        console.error(err);
+        alert("Failed to create game. Please try again.");
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   };
 
   if (loading) {
@@ -112,16 +206,20 @@ const CreateGame = () => {
       </div>
     );
   }
+
   return (
     <div className="min-h-screen bg-gray-100 p-6">
       <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-md p-8">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold text-gray-800 mb-6">Create New Game</h1>
+          <h1 className="text-2xl font-bold text-gray-800">Create New Game</h1>
           <button
-            onClick={()=> navigate('/admin/dashboard')}
-            className='bg-black text-white w-24 h-10 rounded-lg'
-          >Back</button>
+            onClick={() => navigate('/admin/dashboard')}
+            className="bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors"
+          >
+            Back
+          </button>
         </div>
+        
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label htmlFor="gameName" className="block text-sm font-medium text-gray-700">
@@ -131,10 +229,10 @@ const CreateGame = () => {
               type="text"
               id="gameName"
               value={gameDetails.gameName}
-              onChange={(e) => setGameDetails({ ...gameDetails, gameName: e.target.value })}
+              onChange={(e) => setGameDetails(prev => ({ ...prev, gameName: e.target.value }))}
               className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border-2 p-2"
               required
-              placeholder='Enter Game Name'
+              placeholder="Enter Game Name"
             />
           </div>
 
@@ -149,8 +247,9 @@ const CreateGame = () => {
               onChange={handleNumberOfSeatsChange}
               className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border-2 p-2"
               min="1"
+              max="100"
               required
-              placeholder='Enter Number Of Seats eg:5'
+              placeholder="Enter Number of Seats"
             />
           </div>
 
@@ -162,10 +261,12 @@ const CreateGame = () => {
               type="number"
               id="freeseats"
               value={gameDetails.freeSeats}
-              onChange={(e) => setGameDetails({ ...gameDetails, freeSeats: parseInt(e.target.value) })}
+              onChange={handleFreeSeatsChange}
               className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border-2 p-2"
+              min="0"
+              max={gameDetails.totalSeats}
               required
-              placeholder='Enter Number Of Free Seats'
+              placeholder="Enter Number of Free Seats"
             />
           </div>
 
@@ -177,10 +278,12 @@ const CreateGame = () => {
               type="number"
               id="paidseats"
               value={gameDetails.paidSeats}
-              onChange={(e) => setGameDetails({ ...gameDetails, paidSeats: parseInt(e.target.value) })}
+              onChange={handlePaidSeatsChange}
               className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border-2 p-2"
+              min="0"
+              max={gameDetails.totalSeats}
               required
-              placeholder='Enter Number Of Paid Seats'
+              placeholder="Enter Number of Paid Seats"
             />
           </div>
 
@@ -215,10 +318,10 @@ const CreateGame = () => {
               {showPriceSettings && (
                 <div className="mt-4">
                   <h4 className="text-sm font-medium text-gray-700 mb-2">Individual Seat Settings</h4>
-                  <div className="grid grid-cols-5 gap-4">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                     {gameDetails.seats.map((seat, index) => (
-                      <div key={index} className="space-y-1">
-                        <label htmlFor={`seat-${index}`} className="block text-xs text-gray-500">
+                      <div key={index} className="space-y-1 p-2 border rounded-lg">
+                        <label className="block text-xs font-medium text-gray-600">
                           Seat {seat.seatNumber}
                         </label>
                         <div className="flex items-center space-x-2">
@@ -226,8 +329,12 @@ const CreateGame = () => {
                             type="checkbox"
                             id={`paid-${index}`}
                             checked={seat.isPaid}
-                            onChange={(e) => handleSeatPaidChange(index, e.target.checked)}
+                            onChange={(e) => handleSeatStatusChange(index, e.target.checked)}
                             className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                            disabled={
+                              !gameDetails.paidSeats || 
+                              (gameDetails.seats.filter(s => s.isPaid).length >= gameDetails.paidSeats && !seat.isPaid)
+                            }
                           />
                           <label htmlFor={`paid-${index}`} className="text-xs text-gray-500">
                             Paid Seat
@@ -235,23 +342,24 @@ const CreateGame = () => {
                         </div>
                         <input
                           type="number"
-                          id={`seat-${index}`}
                           value={seat.price}
                           onChange={(e) => handleSeatPriceChange(index, e.target.value)}
                           className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border-2 p-2"
                           placeholder="Price"
                           disabled={!seat.isPaid}
+                          min="0"
                         />
-                        <label htmlFor={`Gift-${index}`} className="block text-xs text-gray-500">
-                          Gift (Optional)
-                        </label>
                         <input
                           type="text"
-                          id={`Gift-${index}`}
-                          value={seat.gift}
-                          onChange={(e) => setGameDetails({ ...gameDetails, seats: gameDetails.seats.map((s, i) => i === index ? { ...s, gift: e.target.value } : s) })}
+                          value={seat.gift || ''}
+                          onChange={(e) => setGameDetails(prev => ({
+                            ...prev,
+                            seats: prev.seats.map((s, i) => 
+                              i === index ? { ...s, gift: e.target.value } : s
+                            )
+                          }))}
                           className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border-2 p-2"
-                          placeholder="Gift"
+                          placeholder="Gift (Optional)"
                         />
                       </div>
                     ))}
@@ -263,7 +371,7 @@ const CreateGame = () => {
 
           <button
             type="submit"
-            className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
           >
             Create Game
           </button>
@@ -273,4 +381,4 @@ const CreateGame = () => {
   );
 };
 
-export default CreateGame; 
+export default CreateGame;

@@ -61,13 +61,30 @@ const AvailableGames = () => {
   return (
     <div className="min-h-screen bg-gray-100 p-6">
       <div className="max-w-4xl mx-auto">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-800 mb-6">Available Games</h1>
+      <div className="flex justify-between items-center md-6 ">
+        <h1 className="text-2xl font-bold text-gray-800 ">Available Games</h1>
+
+
+        <div className="flex space-x-4">
+
+
         <button
         onClick={()=> navigate('/previous/games')}
         className=' bg-black text-white w-28  h-12 rounded-lg  '
         >Previous Games</button>
+         <button        
+        className=' bg-black text-white w-28  h-12 rounded-lg  '
+        onClick={()=>{
+          localStorage.removeItem('userId');
+          localStorage.removeItem('token');
+          navigate('/login');
+        }
+      }>
+          Logout  
+        </button>
         </div>
+        </div>
+      
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {games.length>0 ?
