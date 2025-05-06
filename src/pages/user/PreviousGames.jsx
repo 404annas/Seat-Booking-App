@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GetAllNonActiveGames } from '../../API_handler';
 import Loader from '../../components/Loader/Loader';
+import toast from 'react-hot-toast';
 const PreviousGames = () => {
   const navigate = useNavigate();
   // Mock data for demonstration
@@ -12,19 +13,17 @@ const PreviousGames = () => {
     setLoading(true);
    GetAllNonActiveGames().then((res)=>{
     if(res.status === 200){
-      
       setGames(res.data.map((game) => ({
         id: game._id,
-        name: game.gameId,
+        name: game?.gameName,
         availableSeats: game.seats.filter(seat => seat.isOccupied === false).length,
         totalSeats: game.totalSeats,
         requestStatus: game.Approved_Users.find(user => user._id === localStorage.getItem('userId')) ? 'approved': null ,
         status: game.status
-      })));
-      
+      }))); 
     }
     else{
-      alert("Error fetching games");
+     toast.error('Error fetching games');
     }
    }).finally(()=>{ 
     setLoading(false);

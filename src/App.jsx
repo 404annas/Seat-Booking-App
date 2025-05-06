@@ -1,9 +1,10 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-
+import { Toaster } from 'react-hot-toast';
 // Admin Components
 import AdminLogin from './pages/admin/AdminLogin';
 import AdminDashboard from './pages/admin/AdminDashboard';
+import AdminProfile from './pages/admin/AdminProfile';
 import CreateGame from './pages/admin/CreateGame';
 import ManageRequests from './pages/admin/ManageRequests';
 import MonitorSeats from './pages/admin/MonitorSeats';
@@ -11,6 +12,7 @@ import GameControl from './pages/admin/GameControl';
 
 // User Components
 import UserAuth from './pages/user/UserAuth';
+import UserProfile from './pages/user/UserProfile';
 import AvailableGames from './pages/user/AvailableGames';
 import RequestPending from './pages/user/RequestPending';
 import SeatSelection from './pages/user/SeatSelection';
@@ -23,6 +25,12 @@ import ProtectedAdminRoute from './components/ProtectedAdminRoute';
 
 const App = () => {
   return (
+    <>
+            <Toaster
+  position="top-center"
+  reverseOrder={false}
+/>
+    
     <Router>
       <Routes>
         {/* Admin Routes */}
@@ -30,6 +38,11 @@ const App = () => {
         <Route path="/admin/dashboard" element={
           <ProtectedAdminRoute>
             <AdminDashboard />
+          </ProtectedAdminRoute>
+        } />
+        <Route path="/admin/profile" element={
+          <ProtectedAdminRoute>
+            <AdminProfile />
           </ProtectedAdminRoute>
         } />
         <Route path="/admin/create-game" element={
@@ -55,6 +68,7 @@ const App = () => {
 
         {/* User Routes */}
         <Route path="/" element={<UserAuth />} />
+        <Route path="/profile" element={<UserProfile />} />
         <Route path="/games" element={<AvailableGames />} />
         <Route path="/request-pending/:gameId" element={<RequestPending />} />
         <Route path="/select-seat/:gameId" element={<SeatSelection />} />
@@ -64,8 +78,11 @@ const App = () => {
 
         {/* Redirect to home if route not found */}
         <Route path="*" element={<Navigate to="/" replace />} />
+
+        
       </Routes>
     </Router>
+        </>
   );
 };
 

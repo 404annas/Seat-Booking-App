@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { UserLogin, UserRegister } from '../../API_handler';
 import Loader from '../../components/Loader/Loader';
+import toast from 'react-hot-toast';
 const UserAuth = () => {
   const navigate = useNavigate();
   const [isLogin, setIsLogin] = useState(true);
@@ -29,17 +30,17 @@ const UserAuth = () => {
     e.preventDefault();
 
     if (!isLogin && formData.password !== formData.confirmPassword) {
-      alert("Passwords do not match!");
+      toast.error("Passwords do not match!");
       return;
     }
 
-    if( isLogin && !formData.username || !formData.password) {
-      alert("Please fill all the fields!");
+    if( isLogin && !formData.email || !formData.password) {
+      toast.error("Please fill all the fields!");
       return;
     }
 
     if(!isLogin && !formData.confirmPassword) {
-      alert("Please confirm your password!");
+      toast.error("Please confirm your password!");
       return;
     }
 
@@ -49,15 +50,13 @@ const UserAuth = () => {
        if(res.status === 200) {
          localStorage.setItem('token', res.data.token);
          localStorage.setItem('isAdmin', "false");
+          localStorage.setItem('user', JSON.stringify(res.data.user));
           localStorage.setItem('userId', res.data.user.id);
          navigate('/games');
-         alert("User logged in successfully!");
+        toast.success('Login successful!');
         }else{
-          alert("User login failed!");
+          toast.error(res.data.message);
         }
-      }).catch(e=>{
-        alert("User login failed!");
-        console.log(e);
       }).finally(()=>{
         setLoading(false);
       })
@@ -67,11 +66,12 @@ const UserAuth = () => {
       setLoading(true);
       UserRegister(formData).then((res)=>{
        if(res.status === 201) {
-          alert("User registered successfully!");
+          toast.success("User registered successfully!");
           setIsLogin(true);
         }
         else {
-          alert("User registration failed!");
+          toast.error(res.data.message);
+
         }
       }).finally(()=>{
         setLoading(false);
@@ -96,21 +96,7 @@ const UserAuth = () => {
         </h1>
         
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label htmlFor="username" className="block text-sm font-medium text-gray-700">
-              Username
-            </label>
-            <input
-              type="text"
-              id="username"
-              value={formData.username}
-              onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-              className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-200 border-2 p-2"
-              required
-              placeholder="Enter your username"
-            />
-          </div>
-    { !isLogin &&  <div>
+        <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-700">
               Email
             </label>
@@ -123,7 +109,24 @@ const UserAuth = () => {
               required
               placeholder="Enter your email"
             />
-          </div>}
+          </div>
+    { !isLogin && 
+        <div>
+        <label htmlFor="username" className="block text-sm font-medium text-gray-700">
+          Username
+        </label>
+        <input
+          type="text"
+          id="username"
+          value={formData.username}
+          onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+          className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-200 border-2 p-2"
+          required
+          placeholder="Enter your username"
+        />
+      </div>
+
+          }
 
           <div>
             <label htmlFor="password" className="block text-sm font-medium text-gray-700">

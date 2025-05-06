@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CreateGameAPI } from '../../API_handler';
 import Loader from '../../components/Loader/Loader';
-
+import toast from 'react-hot-toast';
 const CreateGame = () => {
   const navigate = useNavigate();
   const initialGameState = {
@@ -79,7 +79,7 @@ const CreateGame = () => {
     const totalPaidSeats = parseInt(gameDetails.paidSeats) || 0;
 
     if (isPaid && paidSeatsCount > totalPaidSeats) {
-      alert(`You can only select ${totalPaidSeats} paid seats`);
+      toast.error(`You can only select ${totalPaidSeats} paid seats`);
       return;
     }
 
@@ -170,7 +170,7 @@ const CreateGame = () => {
     }
 
     if (validationErrors.length > 0) {
-      alert(validationErrors.join("\n"));
+      validationErrors.map(error => toast.error(error));
       setLoading(false);
       return;
     }
@@ -187,12 +187,12 @@ const CreateGame = () => {
 
     CreateGameAPI(gameData)
       .then((res) => {
-        alert(res.message);
+        toast.success(res.message);
         navigate('/admin/dashboard');
       })
       .catch((err) => {
         console.error(err);
-        alert("Failed to create game. Please try again.");
+        toast.error("Failed to create game. Please try again.");
       })
       .finally(() => {
         setLoading(false);

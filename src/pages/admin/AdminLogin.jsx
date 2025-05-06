@@ -2,11 +2,12 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { UserLogin } from '../../API_handler';
 import Loader from '../../components/Loader/Loader';
+import toast from 'react-hot-toast';
 const AdminLogin = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [credentials, setCredentials] = useState({
-    username: '',
+    email: '',
     password: '',
     role: 'admin', // Default role set to 'admin'
   });
@@ -21,12 +22,10 @@ const AdminLogin = () => {
         localStorage.setItem('user', JSON.stringify(res.data.user));
         localStorage.setItem('isAdmin', "true");
         navigate('/admin/dashboard');
-        alert("Login successful");
+        toast.success("Login successful");
       }else{
-        alert(res.data.message);
+          toast.error(res.data.message);
       }
-    }).catch((err)=>{
-      console.log(err);
     }).finally(()=>{
       setLoading(false);
     })
@@ -47,17 +46,17 @@ const AdminLogin = () => {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label htmlFor="username" className="block text-sm font-medium text-gray-700">
-              Username
+              email
             </label>
             <input
-              type="text"
-              id="username"
-              value={credentials.username}
-              onChange={(e) => setCredentials({ ...credentials, username: e.target.value })}
+              type="email"
+              id="email"
+              value={credentials.email}
+              onChange={(e) => setCredentials({ ...credentials, email: e.target.value })}
               className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 *
                border-2 p-2
               "
-              placeholder="Enter your username"
+              placeholder="Enter your email"
               required
             />
           </div>
@@ -83,6 +82,12 @@ const AdminLogin = () => {
           >
             Login
           </button>
+          <p className="text-sm text-center text-gray-600 mt-4">
+          Not an Admin?{' '}
+            <a href="/" className="text-blue-600 hover:underline">
+              Go to User Login
+            </a>
+          </p>
         </form>
       </div>
     </div>

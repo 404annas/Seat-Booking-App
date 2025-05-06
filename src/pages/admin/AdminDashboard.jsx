@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ListAllGamesAPI } from '../../API_handler';
 import Loader from '../../components/Loader/Loader';
+import toast from 'react-hot-toast';
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
@@ -41,11 +42,9 @@ const AdminDashboard = () => {
         });
         setActiveGames(updatedGames);
       }else{
+        toast.error(res.data.message || 'No active games found');
         setActiveGames([]);
       }
-   }).catch((err)=>{
-      console.error(err);
-      setActiveGames([]);
    }).finally(()=>{
     setLoading(false);
    })
@@ -88,12 +87,26 @@ const AdminDashboard = () => {
               <p className="mt-1 text-sm text-gray-500">Welcome back, {adminProfile.username}</p>
             </div>
             <div className="flex items-center space-x-4">
-              <div className="text-right">
-                <p className="text-sm font-medium text-gray-900">{adminProfile.username}</p>
-                <p className="text-sm text-gray-500">{adminProfile.email}</p>
-              </div>
+              <button
+                onClick={() => navigate('/admin/profile')}
+                className="text-sm font-medium text-blue-600 hover:text-blue-800"
+              >
+                My Profile
+              </button>
+              <button
+                onClick={() => {
+                  localStorage.removeItem('userId');
+                  localStorage.removeItem('token');
+                  localStorage.removeItem('isAdmin');
+                  navigate('/admin');
+                  toast.success('Logged out successfully');
+                }}
+                className="px-4 py-2 text-sm font-medium text-white bg-gray-800 rounded-md hover:bg-gray-700"
+              >
+                Logout
+              </button>
               <div className="h-10 w-10 rounded-full bg-blue-600 flex items-center justify-center">
-                <span className="text-white font-medium">{adminProfile.username[0]}</span>
+                <span className="text-white font-medium">{adminProfile.username[0]?.toUpperCase()}</span>
               </div>
             </div>
           </div>
@@ -119,7 +132,7 @@ const AdminDashboard = () => {
             <div key={game._id} className="bg-white rounded-lg shadow-md p-6">
               <div className="flex justify-between items-start mb-4">
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900">{game.gameId}</h3>
+                  <h3 className="text-lg font-semibold text-gray-900">{game?.gameName}</h3>
                   <p className="text-sm text-gray-500">
                     Status: <span className={`font-medium ${game.status === 'active' ? 'text-green-600' : 'text-red-600'}`}>
                       {game.status}
@@ -188,4 +201,4 @@ const AdminDashboard = () => {
   );
 };
 
-export default AdminDashboard; 
+export default AdminDashboard;

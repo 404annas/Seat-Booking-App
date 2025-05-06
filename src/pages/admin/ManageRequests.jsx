@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { GetGameById, RequestStatusUpdate } from '../../API_handler';
 import Loader from '../../components/Loader/Loader';
+import toast from 'react-hot-toast';
 
 const ManageRequests = () => {
   // Mock data for demonstration
@@ -16,8 +17,10 @@ const ManageRequests = () => {
     RequestStatusUpdate(id, 'approved').then((res)=>{
       if(res && res.status === 200){
         setRequests((prevRequests) => prevRequests.filter((request) => request.id !== id));
+        toast.success(res.data.message);
       }else{
         console.error("Error in approving the request");
+        toast.error("Error in approving the request");
       }
     }).catch((err)=>{
       console.error(err);
@@ -31,8 +34,10 @@ const ManageRequests = () => {
    RequestStatusUpdate(id, 'rejected').then((res)=>{
       if(res && res.status === 200){
         setRequests((prevRequests) => prevRequests.filter((request) => request.id !== id));
+        toast.success(res.data.message);
       }else{
         console.error("Error in rejecting the request");
+        toast.error("Error in rejecting the request");
       }
     }).catch((err)=>{
       console.error(err);
@@ -54,7 +59,8 @@ const ManageRequests = () => {
          });
          setRequests(updatedRequests);
        }else{
-         setRequests([]);
+          toast.error('No requests found!');
+          setRequests([]);
        }
      }).catch((err)=>{
        console.error(err);
@@ -118,7 +124,7 @@ const ManageRequests = () => {
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    {request.status !== 'approved' || request.status !== 'rejected' && (
+                    {request.status === 'pending' && (
                       <div className="space-x-2">
                         <button
                           onClick={() => handleApprove(request.id)}

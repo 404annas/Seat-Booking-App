@@ -2,6 +2,7 @@ import React, { useState, useEffect} from 'react';
 import { EndGameManually, GetGameById } from '../../API_handler';
 import { useNavigate, useParams } from 'react-router-dom';
 import Loader from '../../components/Loader/Loader';
+import toast from 'react-hot-toast';
 const GameControl = () => {
   // Mock data for demonstration
   const {gameId} = useParams();
@@ -22,9 +23,10 @@ useEffect(() => {
         remainingSeats: remainingSeats,
         gameStatus: res.data.status
       })
+    }else{
+      toast.error('Something went wrong!');
+      navigate('/admin/dashboard');
     }
-   }).catch((e)=>{
-    console.log(e);
    }).finally(()=>{
     setLoading(false);
    })
@@ -35,7 +37,7 @@ useEffect(() => {
 
   const handleEndGame = () => {
    EndGameManually(gameId).then((res)=>{
-     alert(res.message);
+     toast.success(res.message);
      navigate('/admin/dashboard');
    })
   };
