@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { GetGameById, RequestStatusUpdate } from '../../API_handler';
+import { FaCheck, FaTimes } from 'react-icons/fa';
 import Loader from '../../components/Loader/Loader';
 import toast from 'react-hot-toast';
 
@@ -53,7 +54,7 @@ const ManageRequests = () => {
            return {
              id: request._id,
              userName: request.userId.username,
-             gameName: res.data.gameId,
+             gameName: res.data.gameName,
              status: request.status
            };
          });
@@ -125,18 +126,18 @@ const ManageRequests = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     {request.status === 'pending' && (
-                      <div className="space-x-2">
+                      <div className=" flex space-x-2">
                         <button
                           onClick={() => handleApprove(request.id)}
-                          className="text-green-600 hover:text-green-900"
+                          className="text-green-600 hover:text-green-900 flex items-center gap-1"
                         >
-                          Approve
+                          <FaCheck className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => handleReject(request.id)}
-                          className="text-red-600 hover:text-red-900"
+                          className="text-red-600 hover:text-red-900 flex items-center gap-1"
                         >
-                          Reject
+                          <FaTimes className="w-4 h-4" />
                         </button>
                       </div>
                     )}
@@ -158,4 +159,4 @@ const ManageRequests = () => {
   );
 };
 
-export default ManageRequests; 
+export default ManageRequests;

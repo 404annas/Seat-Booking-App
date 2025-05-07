@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ListAllSeats } from '../../API_handler';
 import Loader from '../../components/Loader/Loader';
+import toast from 'react-hot-toast';
 const SeatSelection = () => {
   const navigate = useNavigate();
   const { gameId } = useParams();
@@ -51,6 +52,14 @@ const SeatSelection = () => {
   const handleBookSeat = () => {
     if (selectedSeat) {
       // Handle booking logic here
+
+      //check if the seat is already booked
+      const seatToBook = seats.find((seat) => seat.id === selectedSeat);
+      if (seatToBook.status === 'booked') {
+        toast.error('This seat is already booked. Please select another seat.');
+        return;
+      }
+
       console.log(`Booking seat ${selectedSeat}`);
       // Navigate to payment page
       navigate(`/payment/${selectedSeat}/${gameId}`);

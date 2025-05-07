@@ -13,6 +13,7 @@ const AvailableGames = () => {
     setLoading(true);
     GetAllActiveGames()
       .then((res) => {
+        console.log(res.data);
         if (res.status === 200) {
           setGames(
             res.data.map((game) => ({
@@ -24,7 +25,8 @@ const AvailableGames = () => {
                 game.Pending_Requests.find((user) => user.userId === localStorage.getItem('userId'))?.status ===
                 'rejected'
                   ? 'rejected'
-                  : game.Approved_Users.find((user) => user._id === localStorage.getItem('userId'))
+                  :  game.Pending_Requests.find((user) => user.userId === localStorage.getItem('userId'))?.status ===
+                  'pending'? 'pending' : game.Approved_Users.find((user) => user._id === localStorage.getItem('userId'))
                   ? 'approved'
                   : null,
               status: game.status,
@@ -43,12 +45,15 @@ const AvailableGames = () => {
     MakeRequestAPI(gameId)
       .then((res) => {
         if (res && res.status === 201) {
-       toast.success(res.data.message || 'Request sent successfully!');
+          toast.success(res.data.message || 'Request sent successfully!');
+          location.reload();
         } else {
         toast.error(res.data.message || 'Error making request');
         }
       })
   };
+
+  console.log(games);
 
   if (loading) {
     return (
@@ -125,7 +130,7 @@ const AvailableGames = () => {
                 ) : game.requestStatus === 'approved' ? (
                   <div className="text-center py-2" onClick={() => navigate(`/select-seat/${game.id}`)}>
                     <button className="text-green-600 font-semibold cursor-pointer hover:text-yellow-700 transition duration-200 rounded-lg bg-green-100 p-2">
-                      Request Approved! join the game.
+                      Join The Game .
                     </button>
                   </div>
                 ) : game.requestStatus === 'rejected' ? (
@@ -134,7 +139,13 @@ const AvailableGames = () => {
                       Request Rejected!.
                     </button>
                   </div>
-                ) : (
+                ) :game.requestStatus === 'pending'?(
+                  <div className="text-center py-2">
+                    <button className="text-yellow-600 font-semibold cursor-pointer hover:text-yellow-700 transition duration-200 rounded-lg bg-green-100 p-2">
+                      Request Pending!.
+                    </button>
+                  </div>
+                ): (
                   <button
                     onClick={() => handleJoin(game.id)}
                     disabled={game.availableSeats === 0}
