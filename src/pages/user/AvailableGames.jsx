@@ -23,17 +23,17 @@ const AvailableGames = () => {
               totalSeats: game.totalSeats,
               requestStatus:
                 game.Pending_Requests.find((user) => user.userId === localStorage.getItem('userId'))?.status ===
-                'rejected'
+                  'rejected'
                   ? 'rejected'
-                  :  game.Pending_Requests.find((user) => user.userId === localStorage.getItem('userId'))?.status ===
-                  'pending'? 'pending' : game.Approved_Users.find((user) => user._id === localStorage.getItem('userId'))
-                  ? 'approved'
-                  : null,
+                  : game.Pending_Requests.find((user) => user.userId === localStorage.getItem('userId'))?.status ===
+                    'pending' ? 'pending' : game.Approved_Users.find((user) => user._id === localStorage.getItem('userId'))
+                    ? 'approved'
+                    : null,
               status: game.status,
             }))
           );
         } else {
-         toast.error(res.data.message || 'Error fetching games');
+          toast.error(res.data.message || 'Error fetching games');
         }
       })
       .finally(() => {
@@ -48,7 +48,7 @@ const AvailableGames = () => {
           toast.success(res.data.message || 'Request sent successfully!');
           location.reload();
         } else {
-        toast.error(res.data.message || 'Error making request');
+          toast.error(res.data.message || 'Error making request');
         }
       })
   };
@@ -83,7 +83,7 @@ const AvailableGames = () => {
                 Previous Games
               </button>
               <button
-                className="bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800"
+                className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-gray-800"
                 onClick={() => {
                   localStorage.removeItem('userId');
                   localStorage.removeItem('token');
@@ -139,21 +139,20 @@ const AvailableGames = () => {
                       Request Rejected!.
                     </button>
                   </div>
-                ) :game.requestStatus === 'pending'?(
+                ) : game.requestStatus === 'pending' ? (
                   <div className="text-center py-2">
                     <button className="text-yellow-600 font-semibold cursor-pointer hover:text-yellow-700 transition duration-200 rounded-lg bg-green-100 p-2">
                       Request Pending!.
                     </button>
                   </div>
-                ): (
+                ) : (
                   <button
                     onClick={() => handleJoin(game.id)}
                     disabled={game.availableSeats === 0}
-                    className={`w-full py-2 px-4 rounded-md text-white font-medium ${
-                      game.availableSeats === 0
-                        ? 'bg-gray-400 cursor-not-allowed'
-                        : 'bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2'
-                    }`}
+                    className={`w-full py-2 px-4 rounded-md text-white font-medium ${game.availableSeats === 0
+                      ? 'bg-gray-400 cursor-not-allowed'
+                      : 'bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2'
+                      }`}
                   >
                     {game.availableSeats === 0 ? 'No Seats Available' : 'Request to Join'}
                   </button>

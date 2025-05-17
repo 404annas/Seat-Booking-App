@@ -1,4 +1,4 @@
-const Base_URL =  import.meta.env.VITE_Base_URL  || "http://localhost:5001/api"; 
+const Base_URL = import.meta.env.VITE_Base_URL || "http://localhost:5001/api";
 import axios from "axios";
 
 //user login and register
@@ -21,7 +21,42 @@ export const UserRegister = async (userData) => {
     )
     return res;
   } catch (error) {
-   return error.response;
+    return error.response;
+  }
+}
+
+export const forgotPassword = async (email, role = 'user') => {
+  try {
+    const res = await axios.post(`${Base_URL}/user/forgot-password`, { email, role });
+    return res;
+  } catch (error) {
+    return error.response;
+  }
+}
+
+export const verifyOTP = async (email, otp) => {
+  try {
+    const res = await axios.post(`${Base_URL}/user/verify-otp`, { email, otp });
+    return res;
+  } catch (error) {
+    return error.response;
+  }
+}
+
+export const resetPassword = async (newPassword, tempToken) => {
+  try {
+    const res = await axios.post(
+      `${Base_URL}/user/reset-password`,
+      { newPassword },
+      {
+        headers: {
+          Authorization: `Bearer ${tempToken}`
+        }
+      }
+    );
+    return res;
+  } catch (error) {
+    return error.response;
   }
 }
 
@@ -41,7 +76,7 @@ export const GetAllActiveGames = async () => {
     const res = await axios.get(`${Base_URL}/game/listActiveGames`)
     return res;
   } catch (error) {
-   return error.response;
+    return error.response;
   }
 }
 
@@ -71,11 +106,11 @@ export const CreateGameAPI = async (gameData) => {
   }
 }
 
-export const ListAllGamesAPI = async()=>{
+export const ListAllGamesAPI = async () => {
   try {
     const res = await axios.get(`${Base_URL}/admin/listAllGames`,
       {
-        headers:{
+        headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
           'Content-Type': 'application/json'
         }
@@ -89,7 +124,7 @@ export const ListAllGamesAPI = async()=>{
 
 export const GetGameById = async (gameId) => {
   try {
-     const res = await axios.get(`${Base_URL}/game/getGameById/${gameId}`)
+    const res = await axios.get(`${Base_URL}/game/getGameById/${gameId}`)
     return res;
   } catch (error) {
     return error.response;
@@ -109,7 +144,7 @@ export const EndGameManually = async (gameId) => {
     )
     return res.data;
   } catch (error) {
-   return error.response;
+    return error.response;
   }
 }
 
@@ -170,7 +205,7 @@ export const MakeRequestAPI = async (gameId) => {
     )
     return res;
   } catch (error) {
-   return error.response;
+    return error.response;
   }
 }
 

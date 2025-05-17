@@ -41,12 +41,12 @@ const CreateGame = () => {
   const handleFreeSeatsChange = (e) => {
     const freeSeatsCount = e.target.value === '' ? '' : parseInt(e.target.value);
     const totalSeats = parseInt(gameDetails.totalSeats) || 0;
-    
+
     if (freeSeatsCount === '' || (freeSeatsCount >= 0 && freeSeatsCount <= totalSeats)) {
       // Calculate paid seats automatically
-      const calculatedPaidSeats = freeSeatsCount === '' ? '' : 
-                                (totalSeats >= freeSeatsCount ? totalSeats - freeSeatsCount : 0);
-      
+      const calculatedPaidSeats = freeSeatsCount === '' ? '' :
+        (totalSeats >= freeSeatsCount ? totalSeats - freeSeatsCount : 0);
+
       setGameDetails(prev => ({
         ...prev,
         freeSeats: freeSeatsCount,
@@ -64,7 +64,7 @@ const CreateGame = () => {
   const handlePaidSeatsChange = (e) => {
     const paidSeatsCount = e.target.value === '' ? '' : parseInt(e.target.value);
     const totalSeats = parseInt(gameDetails.totalSeats) || 0;
-    
+
     if (paidSeatsCount === '' || (paidSeatsCount >= 0 && paidSeatsCount <= totalSeats)) {
       // Don't automatically update free seats, just update paid seats
       setGameDetails(prev => ({
@@ -85,9 +85,9 @@ const CreateGame = () => {
 
     setGameDetails(prev => ({
       ...prev,
-      seats: prev.seats.map((seat, i) => 
-        i === index ? { 
-          ...seat, 
+      seats: prev.seats.map((seat, i) =>
+        i === index ? {
+          ...seat,
           isPaid,
           price: isPaid ? (universalPaidPrice || '') : ''
         } : seat
@@ -101,8 +101,8 @@ const CreateGame = () => {
       setUniversalPaidPrice(price);
       setGameDetails(prev => ({
         ...prev,
-        seats: prev.seats.map(seat => ({ 
-          ...seat, 
+        seats: prev.seats.map(seat => ({
+          ...seat,
           price: seat.isPaid ? (price || '') : ''
         }))
       }));
@@ -114,7 +114,7 @@ const CreateGame = () => {
     if (parsedPrice === '' || parsedPrice >= 0) {
       setGameDetails(prev => ({
         ...prev,
-        seats: prev.seats.map((seat, i) => 
+        seats: prev.seats.map((seat, i) =>
           i === index ? { ...seat, price: parsedPrice || '' } : seat
         )
       }));
@@ -126,12 +126,12 @@ const CreateGame = () => {
     setLoading(true);
 
     const validationErrors = [];
-    
+
     // Basic field validation
     if (!gameDetails.gameName.trim()) {
       validationErrors.push("Game name is required");
     }
-    
+
     if (!gameDetails.totalSeats) {
       validationErrors.push("Total seats is required");
     }
@@ -139,7 +139,7 @@ const CreateGame = () => {
     const totalSeats = parseInt(gameDetails.totalSeats) || 0;
     const freeSeats = parseInt(gameDetails.freeSeats) || 0;
     const paidSeats = parseInt(gameDetails.paidSeats) || 0;
-    
+
     // Validate seat numbers
     if (totalSeats <= 0) {
       validationErrors.push("Please enter a valid number of seats");
@@ -158,7 +158,7 @@ const CreateGame = () => {
     const paidSeatsWithoutPrice = gameDetails.seats.filter(
       seat => seat.isPaid && (!seat.price && seat.price !== 0)
     );
-    
+
     if (paidSeatsWithoutPrice.length > 0) {
       validationErrors.push("All paid seats must have a price set");
     }
@@ -219,74 +219,76 @@ const CreateGame = () => {
             Back
           </button>
         </div>
-        
+
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label htmlFor="gameName" className="block text-sm font-medium text-gray-700">
-              Game Name
-            </label>
-            <input
-              type="text"
-              id="gameName"
-              value={gameDetails.gameName}
-              onChange={(e) => setGameDetails(prev => ({ ...prev, gameName: e.target.value }))}
-              className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border-2 p-2"
-              required
-              placeholder="Enter Game Name"
-            />
-          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-          <div>
-            <label htmlFor="numberOfSeats" className="block text-sm font-medium text-gray-700">
-              Number of Seats
-            </label>
-            <input
-              type="number"
-              id="numberOfSeats"
-              value={gameDetails.totalSeats}
-              onChange={handleNumberOfSeatsChange}
-              className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border-2 p-2"
-              min="1"
-              max="100"
-              required
-              placeholder="Enter Number of Seats"
-            />
-          </div>
+            <div>
+              <label htmlFor="gameName" className="block text-sm font-medium text-gray-700">
+                Game Name
+              </label>
+              <input
+                type="text"
+                id="gameName"
+                value={gameDetails.gameName}
+                onChange={(e) => setGameDetails(prev => ({ ...prev, gameName: e.target.value }))}
+                className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border-2 p-2"
+                required
+                placeholder="Enter Game Name"
+              />
+            </div>
 
-          <div>
-            <label htmlFor="freeseats" className="block text-sm font-medium text-gray-700">
-              Number of Free Seats
-            </label>
-            <input
-              type="number"
-              id="freeseats"
-              value={gameDetails.freeSeats}
-              onChange={handleFreeSeatsChange}
-              className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border-2 p-2"
-              min="0"
-              max={gameDetails.totalSeats}
-              required
-              placeholder="Enter Number of Free Seats"
-            />
-          </div>
+            <div>
+              <label htmlFor="numberOfSeats" className="block text-sm font-medium text-gray-700">
+                Number of Seats
+              </label>
+              <input
+                type="number"
+                id="numberOfSeats"
+                value={gameDetails.totalSeats}
+                onChange={handleNumberOfSeatsChange}
+                className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border-2 p-2"
+                min="1"
+                max="100"
+                required
+                placeholder="Enter Number of Seats"
+              />
+            </div>
 
-          <div>
-            <label htmlFor="paidseats" className="block text-sm font-medium text-gray-700">
-              Number of Paid Seats
-            </label>
-            <input
-              type="number"
-              id="paidseats"
-              value={gameDetails.paidSeats}
-              onChange={handlePaidSeatsChange}
-              className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border-2 p-2"
-              min="0"
-              max={gameDetails.totalSeats}
-              required
-              placeholder="Enter Number of Paid Seats"
-            />
-          </div>
+            <div>
+              <label htmlFor="freeseats" className="block text-sm font-medium text-gray-700">
+                Number of Free Seats
+              </label>
+              <input
+                type="number"
+                id="freeseats"
+                value={gameDetails.freeSeats}
+                onChange={handleFreeSeatsChange}
+                className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border-2 p-2"
+                min="0"
+                max={gameDetails.totalSeats}
+                required
+                placeholder="Enter Number of Free Seats"
+              />
+            </div>
 
+            <div>
+              <label htmlFor="paidseats" className="block text-sm font-medium text-gray-700">
+                Number of Paid Seats
+              </label>
+              <input
+                type="number"
+                id="paidseats"
+                value={gameDetails.paidSeats}
+                onChange={handlePaidSeatsChange}
+                className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border-2 p-2"
+                min="0"
+                max={gameDetails.totalSeats}
+                required
+                placeholder="Enter Number of Paid Seats"
+              />
+            </div>
+          </div>
           {gameDetails.totalSeats > 0 && (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
@@ -299,6 +301,7 @@ const CreateGame = () => {
                   {showPriceSettings ? 'Hide Price Settings' : 'Show Price Settings'}
                 </button>
               </div>
+              <div />
 
               <div>
                 <label htmlFor="universalPaidPrice" className="block text-sm font-medium text-gray-700">
@@ -332,7 +335,7 @@ const CreateGame = () => {
                             onChange={(e) => handleSeatStatusChange(index, e.target.checked)}
                             className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                             disabled={
-                              !gameDetails.paidSeats || 
+                              !gameDetails.paidSeats ||
                               (gameDetails.seats.filter(s => s.isPaid).length >= gameDetails.paidSeats && !seat.isPaid)
                             }
                           />
@@ -354,7 +357,7 @@ const CreateGame = () => {
                           value={seat.gift || ''}
                           onChange={(e) => setGameDetails(prev => ({
                             ...prev,
-                            seats: prev.seats.map((s, i) => 
+                            seats: prev.seats.map((s, i) =>
                               i === index ? { ...s, gift: e.target.value } : s
                             )
                           }))}
@@ -369,12 +372,15 @@ const CreateGame = () => {
             </div>
           )}
 
-          <button
-            type="submit"
-            className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
-          >
-            Create Game
-          </button>
+          <div className="flex justify-center">
+
+            <button
+              type="submit"
+              className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+            >
+              Create Game
+            </button>
+          </div>
         </form>
       </div>
     </div>

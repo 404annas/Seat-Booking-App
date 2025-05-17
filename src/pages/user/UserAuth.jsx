@@ -3,28 +3,31 @@ import { useNavigate } from 'react-router-dom';
 import { UserLogin, UserRegister } from '../../API_handler';
 import Loader from '../../components/Loader/Loader';
 import toast from 'react-hot-toast';
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
+
 const UserAuth = () => {
   const navigate = useNavigate();
   const [isLogin, setIsLogin] = useState(true);
+  const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     username: '',
     email: '',
     password: '',
     confirmPassword: '',
-    role : 'user'
+    role: 'user'
   });
   const [loading, setLoading] = useState(false);
 
   //check if the user is already logged in
-  useEffect(()=>{
-   const token = localStorage.getItem('token');
+  useEffect(() => {
+    const token = localStorage.getItem('token');
     const isAdmin = localStorage.getItem('isAdmin');
-    if(token && isAdmin === 'false'){
+    if (token && isAdmin === 'false') {
       navigate('/games');
-    }else if(token && isAdmin === 'true'){
+    } else if (token && isAdmin === 'true') {
       navigate('/admin/dashboard');
     }
-  },[])
+  }, [])
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -34,38 +37,38 @@ const UserAuth = () => {
       return;
     }
 
-    if( isLogin && !formData.email || !formData.password) {
+    if (isLogin && !formData.email || !formData.password) {
       toast.error("Please fill all the fields!");
       return;
     }
 
-    if(!isLogin && !formData.confirmPassword) {
+    if (!isLogin && !formData.confirmPassword) {
       toast.error("Please confirm your password!");
       return;
     }
 
-    if(isLogin) {
+    if (isLogin) {
       setLoading(true);
-      UserLogin(formData).then((res)=>{
-       if(res.status === 200) {
-         localStorage.setItem('token', res.data.token);
-         localStorage.setItem('isAdmin', "false");
+      UserLogin(formData).then((res) => {
+        if (res.status === 200) {
+          localStorage.setItem('token', res.data.token);
+          localStorage.setItem('isAdmin', "false");
           localStorage.setItem('user', JSON.stringify(res.data.user));
           localStorage.setItem('userId', res.data.user.id);
-         navigate('/games');
-        toast.success('Login successful!');
-        }else{
+          navigate('/games');
+          toast.success('Login successful!');
+        } else {
           toast.error(res.data.message);
         }
-      }).finally(()=>{
+      }).finally(() => {
         setLoading(false);
       })
     }
 
-    if(!isLogin) {
+    if (!isLogin) {
       setLoading(true);
-      UserRegister(formData).then((res)=>{
-       if(res.status === 201) {
+      UserRegister(formData).then((res) => {
+        if (res.status === 201) {
           toast.success("User registered successfully!");
           setIsLogin(true);
         }
@@ -73,7 +76,7 @@ const UserAuth = () => {
           toast.error(res.data.message);
 
         }
-      }).finally(()=>{
+      }).finally(() => {
         setLoading(false);
       })
     }
@@ -94,9 +97,9 @@ const UserAuth = () => {
         <h1 className="text-2xl font-bold text-center mb-6 text-gray-800">
           {isLogin ? 'User Login' : 'User Registration'}
         </h1>
-        
+
         <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
+          <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-700">
               Email
             </label>
@@ -110,21 +113,21 @@ const UserAuth = () => {
               placeholder="Enter your email"
             />
           </div>
-    { !isLogin && 
-        <div>
-        <label htmlFor="username" className="block text-sm font-medium text-gray-700">
-          Username
-        </label>
-        <input
-          type="text"
-          id="username"
-          value={formData.username}
-          onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-          className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-200 border-2 p-2"
-          required
-          placeholder="Enter your username"
-        />
-      </div>
+          {!isLogin &&
+            <div>
+              <label htmlFor="username" className="block text-sm font-medium text-gray-700">
+                Username
+              </label>
+              <input
+                type="text"
+                id="username"
+                value={formData.username}
+                onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-200 border-2 p-2"
+                required
+                placeholder="Enter your username"
+              />
+            </div>
 
           }
 
@@ -132,15 +135,26 @@ const UserAuth = () => {
             <label htmlFor="password" className="block text-sm font-medium text-gray-700">
               Password
             </label>
-            <input
-              type="password"
-              id="password"
-              value={formData.password}
-              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-              className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-200 border-2 p-2 "
-              required
-              placeholder='Enter Your Password'
-            />
+            <div className='relative' >
+
+              <input
+                type={showPassword ? "text" : "password"}
+                id="password"
+                value={formData.password}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-200 border-2 p-2 "
+                required
+                placeholder='Enter Your Password'
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2"
+              >
+                {showPassword ? <FaEyeSlash className="text-gray-500" /> : <FaEye className="text-gray-500" />}
+              </button>
+
+            </div>
           </div>
 
           {!isLogin && (
@@ -166,21 +180,28 @@ const UserAuth = () => {
           >
             {isLogin ? 'Login' : 'Register'}
           </button>
-        </form>
-
-        <div className="mt-4 text-center flex justify-between">
-          <button
-            onClick={() => setIsLogin(!isLogin)}
-            className="text-sm text-blue-600 hover:text-blue-800"
-          >
-            {isLogin ? 'Need an account? Register' : 'Already have an account? Login'}
-          </button>
-          <button
-            onClick={() => navigate('/admin')}
-            className="text-sm text-blue-600 hover:text-blue-800"
-          >
-          Admin Login
-          </button>
+        </form>        <div className="mt-4 text-center space-y-2">
+          {isLogin && (
+            <div className="mb-2">
+              <a href="/forgot-password" className="text-sm text-blue-600 hover:text-blue-800">
+                Forgot Password?
+              </a>
+            </div>
+          )}
+          <div className="flex justify-between">
+            <button
+              onClick={() => setIsLogin(!isLogin)}
+              className="text-sm text-blue-600 hover:text-blue-800"
+            >
+              {isLogin ? 'Need an account? Register' : 'Already have an account? Login'}
+            </button>
+            <button
+              onClick={() => navigate('/admin')}
+              className="text-sm text-blue-600 hover:text-blue-800"
+            >
+              Admin Login
+            </button>
+          </div>
         </div>
       </div>
     </div>
