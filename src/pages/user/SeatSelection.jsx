@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ListAllSeats } from '../../API_handler';
+import { ListAllSeats, testBookSeat } from '../../API_handler';
 import Loader from '../../components/Loader/Loader';
 import toast from 'react-hot-toast';
 const SeatSelection = () => {
   const navigate = useNavigate();
   const { gameId } = useParams();
   const [loading, setLoading] = useState(false);
-  
+
   // Mock data for demonstration
   const [seats, setSeats] = useState(
     Array.from({ length: 20 }, (_, i) => ({
@@ -25,29 +25,67 @@ const SeatSelection = () => {
     }
   };
 
-  useEffect(()=>{
+  useEffect(() => {
     setLoading(true);
-   ListAllSeats(gameId)
-   .then((response) => {
-    console.log(response);
+    ListAllSeats(gameId)
+      .then((response) => {
+        console.log(response);
+        if (response.status === 200) {
+          const data = response.data;
+          const updatedSeats = data.map((seat) => ({
+            id: seat.seatNumber,
+            status: seat.isOccupied ? 'booked' : 'available',
+            price: seat.price
+          }));
+          setSeats(updatedSeats);
+        } else {
+          console.error('Error fetching seats:', response.data.message);
+        }
+      })
+      .catch((error) => {
+        console.error('Error fetching seats:', error);
+      }).finally(() => {
+        setLoading(false);
+      })
+  }, [])
+  const handleTestBooking = async () => {
+    if (!selectedSeat) {
+      toast.error('Please select a seat first');
+      return;
+    }
+
+    const seatToBook = seats.find((seat) => seat.id === selectedSeat);
+    if (seatToBook.status === 'booked') {
+      toast.error('This seat is already booked. Please select another seat.');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await testBookSeat(gameId, selectedSeat);
       if (response.status === 200) {
-        const data = response.data;
-        const updatedSeats = data.map((seat) => ({
-          id: seat.seatNumber,
-          status: seat.isOccupied ? 'booked' : 'available',
-          price: seat.price
-        }));
-        setSeats(updatedSeats);
+        toast.success('Seat booked successfully (TEST MODE)');
+        // Refresh seats data
+        const seatsResponse = await ListAllSeats(gameId);
+        if (seatsResponse.status === 200) {
+          const updatedSeats = seatsResponse.data.map((seat) => ({
+            id: seat.seatNumber,
+            status: seat.isOccupied ? 'booked' : 'available',
+            price: seat.price
+          }));
+          setSeats(updatedSeats);
+        }
+        setSelectedSeat(null);
       } else {
-        console.error('Error fetching seats:', response.data.message);
+        toast.error(response.data.message || 'Booking failed');
       }
-    })
-    .catch((error) => {
-      console.error('Error fetching seats:', error);
-    }).finally(()=>{
+    } catch (error) {
+      console.error('Test booking error:', error);
+      toast.error(error.response?.data?.message || 'Error in test booking');
+    } finally {
       setLoading(false);
-    })
-  },[])
+    }
+  };
 
   const handleBookSeat = () => {
     if (selectedSeat) {
@@ -87,13 +125,13 @@ const SeatSelection = () => {
   return (
     <div className="min-h-screen bg-gray-100 p-6">
       <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-md p-8">
-      <div className="flex justify-between items-center mb-6">
+        <div className="flex justify-between items-center mb-6">
 
-        <h1 className="text-2xl font-bold text-gray-800 mb-6">Select Your Seat</h1>
-        <button
-        onClick={()=> navigate('/games') }
-        className=' bg-black text-white w-24 h-10 rounded-lg  '
-        >Back</button>
+          <h1 className="text-2xl font-bold text-gray-800 mb-6">Select Your Seat</h1>
+          <button
+            onClick={() => navigate('/games')}
+            className=' bg-black text-white w-24 h-10 rounded-lg  '
+          >Back</button>
         </div>
         <div className="grid grid-cols-3 gap-2 mb-4 cursor-pointer sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5  ">
           {seats.map((seat) => (
@@ -130,13 +168,22 @@ const SeatSelection = () => {
             </p>
             <p className="text-gray-600 mb-4">
               Surprise Price! Click below to reveal.
-            </p>
-            <button
-              onClick={handleBookSeat}
-              className="bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-            >
-              Proceed to Payment
-            </button>
+            </p>            <div className="space-y-4">
+              <button
+                onClick={handleBookSeat}
+                className="bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              >
+                Proceed to Payment
+              </button>
+
+              {/* Test Booking Button - Remove in production */}
+              <button
+                onClick={handleTestBooking}
+                className="block w-full bg-purple-600 text-white px-6 py-3 rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
+              >
+                Test Book Seat (No Payment)
+              </button>
+            </div>
           </div>
         )}
       </div>

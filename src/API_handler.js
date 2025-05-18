@@ -60,6 +60,24 @@ export const resetPassword = async (newPassword, tempToken) => {
   }
 }
 
+export const testBookSeat = async (gameId, seatNumber) => {
+  try {
+    const token = localStorage.getItem('token');
+    const res = await axios.post(
+      `${Base_URL}/user/test-book-seat`,
+      { gameId, seatNumber },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    );
+    return res;
+  } catch (error) {
+    return error.response;
+  }
+}
+
 export const UserRequest = async (userData) => {
   try {
     const res = await axios.post(`${Base_URL}/user/request`,

@@ -157,9 +157,8 @@ const PaymentForm = ({ paymentDetails, onSuccess, clientSecret }) => {
       <button
         type="submit"
         disabled={processing}
-        className={`w-full py-3 rounded-md text-white ${
-          processing ? 'bg-gray-400' : 'bg-blue-600 hover:bg-blue-700'
-        } focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2`}
+        className={`w-full py-3 rounded-md text-white ${processing ? 'bg-gray-400' : 'bg-blue-600 hover:bg-blue-700'
+          } focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2`}
       >
         {processing ? 'Processing...' : `Pay $${paymentDetails.price}`}
       </button>
@@ -256,13 +255,13 @@ const PaymentGateway = () => {
     <div className="min-h-screen bg-gray-100 p-6">
       <div className="max-w-md mx-auto bg-white rounded-lg shadow-md p-8">
         <h1 className="text-2xl font-bold text-gray-800 mb-6">Payment Details</h1>
-        
+
         <div className="space-y-4 mb-6">
           <div className="flex justify-between">
             <span className="text-gray-600">Seat Number:</span>
             <span className="font-semibold">{paymentDetails.seatNumber}</span>
           </div>
-          
+
           {paymentStatus === 'pending' && (
             <div className="text-center py-4">
               <p className="text-gray-600">Ready to reveal your seat price?</p>
@@ -279,7 +278,7 @@ const PaymentGateway = () => {
         </div>
 
         {paymentStatus === 'pending' && clientSecret && (
-          <PaymentForm 
+          <PaymentForm
             paymentDetails={paymentDetails}
             onSuccess={handlePaymentSuccess}
             clientSecret={clientSecret}
@@ -291,7 +290,7 @@ const PaymentGateway = () => {
             <div className="text-green-500 text-5xl mb-4">✓</div>
             <h2 className="text-xl font-semibold text-gray-800 mb-2">Payment Successful!</h2>
             <p className="text-gray-600">Your seat has been booked successfully.</p>
-            
+
             <div className="mt-4 p-4 bg-blue-50 rounded-md">
               <p className="text-blue-800 font-medium">Your Seat Price:</p>
               <p className="text-2xl font-bold text-blue-600 mt-2">${paymentDetails.price}</p>
