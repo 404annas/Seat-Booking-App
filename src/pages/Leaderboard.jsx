@@ -15,20 +15,22 @@ const Leaderboard = () => {
     const isadmin = localStorage.getItem("isAdmin")
     if (isadmin == 'true') setAdmin(true);
   }, [])
-
   useEffect(() => {
     setLoading(true);
     GetLeaderboardAPI(gameId).then((res) => {
-      console.log(res.data)
+      console.log('Leaderboard data:', res.data);
       if (res && res.data.length > 0) {
-        const updatedLeaderboard = res.data.map((user) => {
+        const updatedLeaderboard = res.data.map((entry) => {
           return {
-            id: user.seatId,
-            userName: user?.user?.username,
-            seatNumber: user.seatNumber,
+            id: entry.seatId,
+            userName: entry.userId?.username || 'Unknown',
+            seatNumber: entry.seatNumber,
+            prize: entry.price,
+            gift: entry.gift
           };
         });
-
+        // Sort by seat number for consistent display
+        updatedLeaderboard.sort((a, b) => a.seatNumber - b.seatNumber);
         setLeaderboardData(updatedLeaderboard);
       } else {
         setLeaderboardData([]);
@@ -57,31 +59,36 @@ const Leaderboard = () => {
           >Back</button>
         </div>
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Rank
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  User Name
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Seat Number
-                </th>
-              </tr>
-            </thead>
+          <table className="min-w-full divide-y divide-gray-200">            <thead className="bg-gray-50">
+            <tr>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Seat Number
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                User Name
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Prize Value
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Gift
+              </th>
+            </tr>
+          </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {leaderboardData.map((user, index) => (
+              {leaderboardData.map((user) => (
                 <tr key={user.id}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {index + 1}
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-semibold">
+                    Seat {user.seatNumber}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {user.userName}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {user.seatNumber}
+                    {`$${user.prize}`}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {user.gift}
                   </td>
                 </tr>
               ))}
