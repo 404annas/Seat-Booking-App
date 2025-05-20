@@ -97,12 +97,7 @@ const AdminLogin = () => {
                 Reset Here
               </a>
             </p>
-            <p className="text-sm text-center text-gray-600">
-              Not an Admin?{' '}
-              <a href="/" className="text-blue-600 hover:underline">
-                Go to User Login
-              </a>
-            </p>
+
           </div>
         </form>
       </div>

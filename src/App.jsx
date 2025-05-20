@@ -9,6 +9,7 @@ import CreateGame from './pages/admin/CreateGame';
 import ManageRequests from './pages/admin/ManageRequests';
 import MonitorSeats from './pages/admin/MonitorSeats';
 import GameControl from './pages/admin/GameControl';
+import ViewBookings from './pages/admin/ViewBookings';
 
 // User Components
 import UserAuth from './pages/user/UserAuth';
@@ -38,7 +39,7 @@ const App = () => {
         <Routes>
           <Route path="/forgot-password" element={<ForgotPassword />} />
           {/* Admin Routes */}
-          <Route path="/admin" element={<AdminLogin />} />
+          <Route path="/control/admin/secure-7845799" element={<AdminLogin />} />
           <Route path="/admin/forgot-password" element={<AdminForgotPassword />} />
           <Route path="/admin/previous/games" element={<AdminPreviousGames />} />
 
@@ -65,6 +66,11 @@ const App = () => {
           <Route path="/admin/monitor-seats/:gameId" element={
             <ProtectedAdminRoute>
               <MonitorSeats />
+            </ProtectedAdminRoute>
+          } />
+          <Route path="/admin/view-bookings/:gameId" element={
+            <ProtectedAdminRoute>
+              <ViewBookings />
             </ProtectedAdminRoute>
           } />
           <Route path="/admin/game-control/:gameId" element={

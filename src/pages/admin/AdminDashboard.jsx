@@ -4,7 +4,10 @@ import { ListAllGamesAPI } from '../../API_handler';
 import Loader from '../../components/Loader/Loader';
 import toast from 'react-hot-toast';
 import { IoGameControllerSharp } from "react-icons/io5";
-import { MdManageAccounts } from "react-icons/md";
+import { MdManageAccounts, MdEventSeat } from "react-icons/md";
+import { FaHistory } from "react-icons/fa";
+import { IoLogOutOutline } from "react-icons/io5";
+import { CgProfile } from "react-icons/cg";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -52,7 +55,6 @@ const AdminDashboard = () => {
       setLoading(false);
     })
   }, [])
-
   const handleGameAction = (gameId, action) => {
     switch (action) {
       case 'control':
@@ -60,6 +62,9 @@ const AdminDashboard = () => {
         break;
       case 'requests':
         navigate(`/admin/manage-requests/${gameId}`);
+        break;
+      case 'viewBookings':
+        navigate(`/admin/view-bookings/${gameId}`);
         break;
       case 'Leaderboard':
         navigate(`/leaderboard/${gameId}`);
@@ -93,33 +98,31 @@ const AdminDashboard = () => {
                   localStorage.removeItem('userId');
                   localStorage.removeItem('token');
                   localStorage.removeItem('isAdmin');
-                  navigate('/admin');
+                  navigate('/control/admin/secure-7845799');
                   toast.success('Logged out successfully');
                 }}
-                className="px-4 py-2 text-sm font-medium text-white bg-red-500 rounded-md hover:bg-gray-700"
+                className="px-4 py-2 text-sm font-medium text-white bg-red-500 rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 group relative"
               >
-                Logout
+                {/* icon and tooltip */}
+                <IoLogOutOutline className=' h-7 w-7 ' />
+                <span className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 scale-0 group-hover:scale-100 transition-transform bg-gray-800 text-white text-xs rounded py-1 px-2 whitespace-nowrap z-10">
+                  Logout
+                </span>
               </button>
               <div className="relative inline-block">
-                {/* Avatar */}
-                <div
-                  className="h-10 w-10 rounded-full bg-blue-600 flex items-center justify-center cursor-pointer"
-                  onClick={() => setShowProfileBtn(prev => !prev)}
-                >
-                  <button className="text-white font-medium">
-                    {adminProfile.username[0]?.toUpperCase()}
-                  </button>
-                </div>
-
                 {/* My Profile Button (toggle on click) */}
-                {showProfileBtn && (
+                {(
                   <button
-                    className="mt-2 absolute left-1/2 -translate-x-1/2 bg-white border border-blue-500 text-blue-600 text-sm px-3 py-1 rounded-md shadow z-10"
+                    className="px-4 py-2 text-sm font-medium text-white bg-blue-500 rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 group relative"
                     onClick={() => {
                       navigate('/admin/profile')
                     }}
                   >
-                    My Profile
+                    <CgProfile className=' h-7 w-7   ' />
+                    <span className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 scale-0 group-hover:scale-100 transition-transform bg-gray-800 text-white text-xs rounded py-1 px-2 whitespace-nowrap z-10">
+                      My Profile
+                    </span>
+
                   </button>
                 )}
               </div>
@@ -136,15 +139,41 @@ const AdminDashboard = () => {
 
             <button
               onClick={() => navigate('/admin/previous/games')}
-              className="bg-gray-900 text-white px-4 py-2 rounded-md hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              className="bg-gray-900 text-white px-4 py-2 rounded-md hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 group relative  "
             >
-              Previous Games
+              <FaHistory className=' h-5 w-5  ' />
+              {/* add a tool tip */}
+              <span className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 scale-0 group-hover:scale-100 transition-transform bg-gray-800 text-white text-xs rounded py-1 px-2 whitespace-nowrap z-10">
+                Previous Games
+              </span>
+
             </button>
             <button
               onClick={() => navigate('/admin/create-game')}
-              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 *:first-letter: group relative  "
             >
-              Create New Game
+              {/* icon and tool tip */}
+              <span className="flex items-center">
+                <svg
+                  className="h-5 w-5 mr-2"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 4v16m8-8H4"
+                  />
+                </svg>
+                Create Game
+              </span>
+              <span className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 scale-0 group-hover:scale-100 transition-transform bg-gray-800 text-white text-xs rounded py-1 px-2 whitespace-nowrap z-10">
+                Create New Game
+              </span>
+
             </button>
           </div>
 
@@ -194,9 +223,7 @@ const AdminDashboard = () => {
                               <span className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 scale-0 group-hover:scale-100 transition-transform bg-gray-800 text-white text-xs rounded py-1 px-2 whitespace-nowrap z-10">
                                 Game Control
                               </span>
-                            </div>
-
-                            <div className="relative group inline-block">
+                            </div>                            <div className="relative group inline-block">
                               <button
                                 onClick={() => handleGameAction(game._id, 'requests')}
                                 className="px-3 py-1 text-sm bg-yellow-100 text-yellow-700 rounded-md hover:bg-yellow-200"
@@ -209,7 +236,18 @@ const AdminDashboard = () => {
                               </span>
                             </div>
 
+                            <div className="relative group inline-block">
+                              <button
+                                onClick={() => handleGameAction(game._id, 'viewBookings')}
+                                className="px-3 py-1 text-sm bg-purple-100 text-purple-700 rounded-md hover:bg-purple-200"
+                              >
+                                <MdEventSeat className="h-5 w-5" />
+                              </button>
 
+                              <span className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 scale-0 group-hover:scale-100 transition-transform bg-gray-800 text-white text-xs rounded py-1 px-2 whitespace-nowrap z-10">
+                                View Bookings
+                              </span>
+                            </div>
                           </>
                           :
                           <button

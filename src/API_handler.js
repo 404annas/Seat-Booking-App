@@ -262,3 +262,22 @@ export const UpdateAdminProfile = async (userData) => {
     throw error;
   }
 };
+
+export const uploadImage = async (formData) => {
+  try {
+    const token = localStorage.getItem('token');
+    const res = await axios.post(
+      `${Base_URL}/admin/upload-image`,
+      formData,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data'
+        }
+      }
+    );
+    return res.data;
+  } catch (error) {
+    throw error.response ? error.response.data : error;
+  }
+};

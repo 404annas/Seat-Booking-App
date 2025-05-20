@@ -3,6 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { GetAllActiveGames, MakeRequestAPI } from '../../API_handler';
 import Loader from '../../components/Loader/Loader';
 import toast from 'react-hot-toast';
+import { IoLogOutOutline } from "react-icons/io5";
+import { CgProfile } from 'react-icons/cg';
+import { FaHistory } from 'react-icons/fa';
 
 const AvailableGames = () => {
   const navigate = useNavigate();
@@ -74,24 +77,42 @@ const AvailableGames = () => {
                 onClick={() => navigate('/profile')}
                 className="text-sm font-medium text-blue-600 hover:text-blue-800"
               >
-                My Profile
+
               </button>
               <button
                 onClick={() => navigate('/previous/games')}
-                className="bg-gray-800 text-white px-4 py-2 rounded-lg hover:bg-gray-700"
+                className="bg-gray-800 flex justify-center items-center text-white px-4 py-2 rounded-lg hover:bg-gray-700"
               >
+                <FaHistory className=' h-5 w-5  ' />
                 Previous Games
               </button>
               <button
-                className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-gray-800"
                 onClick={() => {
                   localStorage.removeItem('userId');
                   localStorage.removeItem('token');
-                  navigate('/');
-                  toast.success('Logged out successfully!');
+                  localStorage.removeItem('isAdmin');
+                  navigate('/admin');
+                  toast.success('Logged out successfully');
+                }}
+                className="px-4 py-2 text-sm font-medium text-white bg-red-500 rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 group relative"
+              >
+                {/* icon and tooltip */}
+                <IoLogOutOutline className=' h-7 w-7 ' />
+                <span className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 scale-0 group-hover:scale-100 transition-transform bg-gray-800 text-white text-xs rounded py-1 px-2 whitespace-nowrap z-10">
+                  Logout
+                </span>
+              </button>
+              <button
+                className="px-4 py-2 text-sm font-medium text-white bg-blue-500 rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 group relative"
+                onClick={() => {
+                  navigate('/profile')
                 }}
               >
-                Logout
+                <CgProfile className=' h-7 w-7   ' />
+                <span className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 scale-0 group-hover:scale-100 transition-transform bg-gray-800 text-white text-xs rounded py-1 px-2 whitespace-nowrap z-10">
+                  My Profile
+                </span>
+
               </button>
             </div>
           </div>

@@ -130,16 +130,17 @@ const ManageRequests = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       {request.status === 'pending' && (
+                        // make the icons more looks good add box outside border like
                         <div className=" flex space-x-2">
                           <button
                             onClick={() => handleApprove(request.id)}
-                            className="text-green-600 hover:text-green-900 flex items-center gap-1"
+                            className="text-green-600 hover:text-green-900 flex items-center gap-1 *:hover:scale-110 transition-transform duration-200 border-2 border-green-600 rounded-full p-1"
                           >
                             <FaCheck className="w-4 h-4" />
                           </button>
                           <button
                             onClick={() => handleReject(request.id)}
-                            className="text-red-600 hover:text-red-900 flex items-center gap-1"
+                            className="text-red-600 hover:text-red-900 flex items-center gap-1 *:hover:scale-110 transition-transform duration-200 border-2 border-red-600 rounded-full p-1"
                           >
                             <FaTimes className="w-4 h-4" />
                           </button>

@@ -1,45 +1,49 @@
-import React, { useState, useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import { EndGameManually, GetGameById } from '../../API_handler';
 import { useNavigate, useParams } from 'react-router-dom';
 import Loader from '../../components/Loader/Loader';
 import toast from 'react-hot-toast';
+import ConfirmDialog from '../../components/ConfirmDialog/ConfirmDialog';
 const GameControl = () => {
   // Mock data for demonstration
-  const {gameId} = useParams();
-  const navigate = useNavigate();
-  const [gameStats, setGameStats] = useState({});
+  const { gameId } = useParams();
+  const navigate = useNavigate(); const [gameStats, setGameStats] = useState({});
   const [loading, setLoading] = useState(false);
+  const [showEndGameDialog, setShowEndGameDialog] = useState(false);
 
-useEffect(() => {
-  setLoading(true);
-   GetGameById(gameId).then((res)=>{
-    if(res && res.status === 200){
-      const bookedSeats = res.data.seats.filter(seat => seat.isOccupied === true ).length;
-      const totalSeats = res.data.seats.length;
-      const remainingSeats = totalSeats - bookedSeats;
-      setGameStats({
-        totalSeats: totalSeats,
-        bookedSeats: bookedSeats,
-        remainingSeats: remainingSeats,
-        gameStatus: res.data.status
-      })
-    }else{
-      toast.error('Something went wrong!');
-      navigate('/admin/dashboard');
-    }
-   }).finally(()=>{
-    setLoading(false);
-   })
-},[])
+  useEffect(() => {
+    setLoading(true);
+    GetGameById(gameId).then((res) => {
+      if (res && res.status === 200) {
+        const bookedSeats = res.data.seats.filter(seat => seat.isOccupied === true).length;
+        const totalSeats = res.data.seats.length;
+        const remainingSeats = totalSeats - bookedSeats;
+        setGameStats({
+          totalSeats: totalSeats,
+          bookedSeats: bookedSeats,
+          remainingSeats: remainingSeats,
+          gameStatus: res.data.status
+        })
+      } else {
+        toast.error('Something went wrong!');
+        navigate('/admin/dashboard');
+      }
+    }).finally(() => {
+      setLoading(false);
+    })
+  }, [])
 
 
-  
 
   const handleEndGame = () => {
-   EndGameManually(gameId).then((res)=>{
-     toast.success(res.message);
-     navigate('/admin/dashboard');
-   })
+    setShowEndGameDialog(true);
+  };
+
+  const confirmEndGame = () => {
+    EndGameManually(gameId).then((res) => {
+      toast.success(res.message);
+      navigate('/admin/dashboard');
+    })
   };
 
   if (loading) {
@@ -48,29 +52,35 @@ useEffect(() => {
         <Loader />
       </div>
     );
-  }
-  return (
+  } return (
     <div className="min-h-screen bg-gray-100 p-6">
+      <ConfirmDialog
+        isOpen={showEndGameDialog}
+        onClose={() => setShowEndGameDialog(false)}
+        onConfirm={confirmEndGame}
+        title="End Game"
+        message="Are you sure you want to end this game? This action cannot be undone."
+      />
       <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-md p-8">
-      <div className="flex justify-between items-center mb-6">
+        <div className="flex justify-between items-center mb-6">
 
-        <h1 className="text-2xl font-bold text-gray-800 mb-6">Game Control</h1>
-        <button
-        onClick={()=> navigate('/admin/dashboard') }
-        className=' bg-black text-white w-24 h-10 rounded-lg  '
-        >Back</button>
+          <h1 className="text-2xl font-bold text-gray-800 mb-6">Game Control</h1>
+          <button
+            onClick={() => navigate('/admin/dashboard')}
+            className=' bg-black text-white w-24 h-10 rounded-lg  '
+          >Back</button>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <div className="bg-blue-50 p-6 rounded-lg">
             <h2 className="text-lg font-semibold text-blue-800 mb-2">Total Seats</h2>
             <p className="text-3xl font-bold text-blue-600">{gameStats.totalSeats}</p>
           </div>
-          
+
           <div className="bg-green-50 p-6 rounded-lg">
             <h2 className="text-lg font-semibold text-green-800 mb-2">Booked Seats</h2>
             <p className="text-3xl font-bold text-green-600">{gameStats.bookedSeats}</p>
           </div>
-          
+
           <div className="bg-yellow-50 p-6 rounded-lg">
             <h2 className="text-lg font-semibold text-yellow-800 mb-2">Remaining Seats</h2>
             <p className="text-3xl font-bold text-yellow-600">{gameStats.remainingSeats}</p>

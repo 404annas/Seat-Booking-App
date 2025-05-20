@@ -195,12 +195,7 @@ const UserAuth = () => {
             >
               {isLogin ? 'Need an account? Register' : 'Already have an account? Login'}
             </button>
-            <button
-              onClick={() => navigate('/admin')}
-              className="text-sm text-blue-600 hover:text-blue-800"
-            >
-              Admin Login
-            </button>
+
           </div>
         </div>
       </div>
