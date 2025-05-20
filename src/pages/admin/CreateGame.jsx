@@ -128,11 +128,10 @@ const CreateGame = () => {
         )
       }));
     }
-  };
-  const handleSubmit = (e) => {
+  }; const handleSubmit = (e) => {
     e.preventDefault();
-    setLoading(true);
 
+    // Don't set loading true during validation phase
     const validationErrors = [];
     const MAX_NAME_LENGTH = 100;
     const MIN_NAME_LENGTH = 3;
@@ -212,11 +211,8 @@ const CreateGame = () => {
     // Validate gift text length if provided
     if (gameDetails.universalGift && gameDetails.universalGift.length > 200) {
       validationErrors.push("Universal gift description must be at most 200 characters");
-    }
-
-    if (validationErrors.length > 0) {
+    } if (validationErrors.length > 0) {
       validationErrors.forEach(error => toast.error(error));
-      setLoading(false);
       return;
     }
 
@@ -236,22 +232,19 @@ const CreateGame = () => {
 
     setGameDataToSubmit(gameData);
     setShowConfirmDialog(true);
-  };
-  const handleConfirmCreate = () => {
-    setLoading(true);
-    CreateGameAPI(gameDataToSubmit)
-      .then((res) => {
-        toast.success(res.message);
-        navigate('/admin/dashboard');
-      })
-      .catch((err) => {
-        console.error(err);
-        toast.error("Failed to create game. Please try again.");
-      })
-      .finally(() => {
-        setLoading(false);
-        setShowConfirmDialog(false);
-      });
+  }; const handleConfirmCreate = async () => {
+    try {
+      setLoading(true);
+      const res = await CreateGameAPI(gameDataToSubmit);
+      toast.success(res.message);
+      navigate('/admin/dashboard');
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to create game. Please try again.");
+      setLoading(false); // Make sure to set loading false if there's an error
+    } finally {
+      setShowConfirmDialog(false);
+    };
   }; const handleImageUpload = async (e) => {
     try {
       const file = e.target.files[0];
