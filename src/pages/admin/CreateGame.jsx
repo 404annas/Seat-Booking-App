@@ -4,6 +4,7 @@ import { CreateGameAPI, uploadImage } from '../../API_handler';
 import Loader from '../../components/Loader/Loader';
 import toast from 'react-hot-toast';
 import ConfirmDialog from '../../components/ConfirmDialog/ConfirmDialog';
+import RichTextEditor from '../../components/Editor/RichTextEditor';
 const CreateGame = () => {
   const navigate = useNavigate();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
@@ -12,6 +13,7 @@ const CreateGame = () => {
     gameName: '',
     description: '',
     additionalInfo: '',
+    gameImage: '',
     universalGift: '',
     universalGiftImage: '',
     totalSeats: '',
@@ -23,10 +25,12 @@ const CreateGame = () => {
 
   const [gameDetails, setGameDetails] = useState(initialGameState);
   const [imagePreview, setImagePreview] = useState('');
+  const [gameImagePreview, setGameImagePreview] = useState('');
   const [showPriceSettings, setShowPriceSettings] = useState(true);
   const [universalPaidPrice, setUniversalPaidPrice] = useState('');
   const [loading, setLoading] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [uploadingGameImage, setUploadingGameImage] = useState(false);
 
   const handleNumberOfSeatsChange = (e) => {
     const numSeats = e.target.value === '' ? '' : parseInt(e.target.value);
@@ -214,12 +218,11 @@ const CreateGame = () => {
     } if (validationErrors.length > 0) {
       validationErrors.forEach(error => toast.error(error));
       return;
-    }
-
-    // Prepare data for API
+    }    // Prepare data for API
     const gameData = {
       ...gameDetails,
       gameName: gameDetails.gameName.trim(),
+      gameImage: gameDetails.gameImage,
       description: gameDetails.description?.trim(),
       additionalInfo: gameDetails.additionalInfo?.trim(),
       universalGift: gameDetails.universalGift?.trim(),
@@ -265,14 +268,19 @@ const CreateGame = () => {
         return;
       }
 
-      setUploadingImage(true);
-      const formData = new FormData();
+      setUploadingImage(true); const formData = new FormData();
       formData.append('giftImage', file);
 
       // Create preview URL
       const previewUrl = URL.createObjectURL(file);
-      setImagePreview(previewUrl);      // Upload image using API handler
+      setImagePreview(previewUrl);
+
+      // Upload image using API handler
       const data = await uploadImage(formData);
+      if (!data || !data.imageUrl) {
+        throw new Error('No image URL received from server');
+      }
+
       setGameDetails(prev => ({
         ...prev,
         universalGiftImage: data.imageUrl
@@ -287,6 +295,53 @@ const CreateGame = () => {
     }
   };
 
+  const handleGameImageUpload = async (e) => {
+    try {
+      const file = e.target.files[0];
+      if (!file) {
+        toast.error('Please select an image file');
+        return;
+      }
+
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error('Image size must be less than 5MB');
+        return;
+      }
+
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        toast.error('Please upload an image file (JPG, PNG, etc.)');
+        return;
+      }
+
+      setUploadingGameImage(true); const formData = new FormData();
+      formData.append('gameImage', file);
+
+      // Create preview URL
+      const previewUrl = URL.createObjectURL(file);
+      setGameImagePreview(previewUrl);
+
+      // Upload image using API handler
+      const data = await uploadImage(formData);
+      if (!data || !data.imageUrl) {
+        throw new Error('No image URL received from server');
+      }
+
+      setGameDetails(prev => ({
+        ...prev,
+        gameImage: data.imageUrl
+      }));
+      toast.success('Game image uploaded successfully');
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      toast.error(error.message || 'Failed to upload image');
+      setGameImagePreview('');
+    } finally {
+      setUploadingGameImage(false);
+    }
+  };
+
   // Cleanup function for image preview
   const cleanupImagePreview = () => {
     if (imagePreview) {
@@ -295,10 +350,25 @@ const CreateGame = () => {
     }
   };
 
+  // Cleanup function for game image preview
+  const cleanupGameImagePreview = () => {
+    if (gameImagePreview) {
+      URL.revokeObjectURL(gameImagePreview);
+      setGameImagePreview('');
+    }
+  };
+
   // Cleanup effect for image preview
   useEffect(() => {
     return () => {
       cleanupImagePreview();
+    };
+  }, []);
+
+  // Cleanup effect for game image preview
+  useEffect(() => {
+    return () => {
+      cleanupGameImagePreview();
     };
   }, []);
 
@@ -328,17 +398,55 @@ const CreateGame = () => {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-6">
-            {/* Game Name - Full width */}
-            <div className="w-full">
-              <label className="block text-sm font-medium text-gray-700">Game Name</label>
-              <input
-                type="text"
-                value={gameDetails.gameName}
-                onChange={(e) => setGameDetails(prev => ({ ...prev, gameName: e.target.value }))}
-                className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border-2 p-2"
-                required
-                placeholder="Enter Game Name"
-              />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+              {/* Game Name - Full width */}
+              <div className="w-full">
+                <label className="block text-sm font-medium text-gray-700">Game Name</label>
+                <input
+                  type="text"
+                  value={gameDetails.gameName}
+                  onChange={(e) => setGameDetails(prev => ({ ...prev, gameName: e.target.value }))}
+                  className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border-2 p-2"
+                  required
+                  placeholder="Enter Game Name"
+                />
+              </div>
+
+              {/* Game Image Upload */}
+              <div className="w-full">
+                <label className="block text-sm font-medium text-gray-700">Game Image</label>
+                <div className="mt-1 space-y-4">
+                  <div className="flex items-center gap-4">
+                    <input
+                      type="file"
+                      onChange={handleGameImageUpload}
+                      accept="image/*"
+                      className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                      disabled={uploadingGameImage}
+                    />
+                  </div>
+
+                  {uploadingGameImage && (
+                    <div className="flex items-center justify-center space-x-2 text-sm text-gray-500">
+                      <Loader />
+                      <span>Uploading image...</span>
+                    </div>
+                  )}
+
+                  {gameDetails.gameImage && !uploadingGameImage && (
+                    <div className="flex items-center space-x-4">
+                      <img
+                        src={gameDetails.gameImage}
+                        alt="Game"
+                        className="h-32 w-48 object-cover rounded-md shadow-md"
+                      />
+                      <span className="text-sm text-green-600">✓ Image uploaded successfully</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
             </div>
 
             {/* Seats Configuration - Grid */}
@@ -448,28 +556,39 @@ const CreateGame = () => {
               </div>
             </div>
 
-            {/* Game Information - Full width fields */}
-            <div className="w-full">
-              <label className="block text-sm font-medium text-gray-700">Description</label>
-              <textarea
-                value={gameDetails.description}
-                onChange={(e) => setGameDetails(prev => ({ ...prev, description: e.target.value }))}
-                className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border-2 p-2"
-                rows={3}
-                placeholder="Enter game description"
-              />
-            </div>
+            {/* Game Image Upload */}
+            {/* <div className="w-full">
+              <label className="block text-sm font-medium text-gray-700">Game Image</label>
+              <div className="mt-1 space-y-4">
+                <div className="flex items-center gap-4">
+                  <input
+                    type="file"
+                    onChange={handleGameImageUpload}
+                    accept="image/*"
+                    className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                    disabled={uploadingGameImage}
+                  />
+                </div>
 
-            <div className="w-full">
-              <label className="block text-sm font-medium text-gray-700">Additional Information</label>
-              <textarea
-                value={gameDetails.additionalInfo}
-                onChange={(e) => setGameDetails(prev => ({ ...prev, additionalInfo: e.target.value }))}
-                className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border-2 p-2"
-                rows={3}
-                placeholder="Enter additional information"
-              />
-            </div>
+                {uploadingGameImage && (
+                  <div className="flex items-center justify-center space-x-2 text-sm text-gray-500">
+                    <Loader />
+                    <span>Uploading image...</span>
+                  </div>
+                )}
+
+                {gameDetails.gameImage && !uploadingGameImage && (
+                  <div className="flex items-center space-x-4">
+                    <img
+                      src={gameDetails.gameImage}
+                      alt="Game"
+                      className="h-32 w-48 object-cover rounded-md shadow-md"
+                    />
+                    <span className="text-sm text-green-600">✓ Image uploaded successfully</span>
+                  </div>
+                )}
+              </div>
+            </div> */}
           </div>
 
           {/* Individual Seat Settings */}
@@ -538,6 +657,24 @@ const CreateGame = () => {
               )}
             </div>
           )}
+
+          {/* Game Information - Full width fields */}            <div className="w-full">
+            <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+            <RichTextEditor
+              content={gameDetails.description}
+              onChange={(html) => setGameDetails(prev => ({ ...prev, description: html }))}
+              placeholder="Enter game description"
+            />
+          </div>
+
+          <div className="w-full mt-6">
+            <label className="block text-sm font-medium text-gray-700 mb-2">Additional Information</label>
+            <RichTextEditor
+              content={gameDetails.additionalInfo}
+              onChange={(html) => setGameDetails(prev => ({ ...prev, additionalInfo: html }))}
+              placeholder="Enter additional information"
+            />
+          </div>
 
           <div className="flex justify-center">
             <button

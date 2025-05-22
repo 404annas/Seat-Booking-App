@@ -1,3 +1,113 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Tiptap Editor Styles */
+.ProseMirror {
+  outline: none;
+  height: 100%;
+  position: relative;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Prevent focus from causing scroll */
+.ProseMirror:focus {
+  outline: none !important;
+}
+
+.ProseMirror>*+* {
+  margin-top: 0.5em;
+}
+
+/* Hide scrollbar but keep functionality */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+  /* Chrome, Safari and Opera */
+}
+
+.ProseMirror ul,
+.ProseMirror ol {
+  padding: 0 1rem;
+  margin: 0.5em 0;
+}
+
+.ProseMirror h1,
+.ProseMirror h2,
+.ProseMirror h3,
+.ProseMirror h4,
+.ProseMirror h5,
+.ProseMirror h6 {
+  line-height: 1.1;
+  margin: 1em 0 0.5em;
+}
+
+/* Placeholder styles */
+.ProseMirror p.is-editor-empty:first-child::before,
+.ProseMirror .is-empty::before {
+  color: #adb5bd;
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+  font-style: italic;
+}
+
+/* Menu bar styles */
+.tiptap-menubar {
+  padding: 0.5rem;
+  border-bottom: 1px solid #e5e7eb;
+  background-color: #f9fafb;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.tiptap-menubar button {
+  padding: 0.25rem;
+  border-radius: 0.375rem;
+  transition: all 150ms;
+}
+
+.tiptap-menubar button:hover {
+  background-color: #e5e7eb;
+}
+
+.tiptap-menubar button.is-active {
+  background-color: #e5e7eb;
+}
+
+/* Content styles */
+.ProseMirror p {
+  margin: 0;
+  line-height: 1.5;
+}
+
+.ProseMirror a {
+  color: #2563eb;
+  text-decoration: underline;
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.ProseMirror::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.ProseMirror {
+  -ms-overflow-style: none;
+  /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
+}

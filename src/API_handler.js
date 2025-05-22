@@ -166,6 +166,24 @@ export const EndGameManually = async (gameId) => {
   }
 }
 
+export const declareWinners = async (gameId, seatIds) => {
+  try {
+    const res = await axios.post(
+      `${Base_URL}/admin/declareWinners`,
+      { gameId, seatIds },
+      {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+    return res;
+  } catch (error) {
+    return error.response;
+  }
+}
+
 export const RequestStatusUpdate = async (requestId, status) => {
   try {
     const res = await axios.post(`${Base_URL}/admin/update/requestStatus/${requestId}`,

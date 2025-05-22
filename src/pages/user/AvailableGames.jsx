@@ -16,12 +16,12 @@ const AvailableGames = () => {
     setLoading(true);
     GetAllActiveGames()
       .then((res) => {
-        console.log(res.data);
         if (res.status === 200) {
           setGames(
             res.data.map((game) => ({
               id: game._id,
               name: game?.gameName,
+              gameImage: game?.gameImage,
               availableSeats: game.seats.filter((seat) => seat.isOccupied === false).length,
               totalSeats: game.totalSeats,
               requestStatus:
@@ -44,6 +44,8 @@ const AvailableGames = () => {
       });
   }, []);
 
+  console.log(games)
+
   const handleJoin = (gameId) => {
     MakeRequestAPI(gameId)
       .then((res) => {
@@ -56,7 +58,6 @@ const AvailableGames = () => {
       })
   };
 
-  console.log(games);
 
   if (loading) {
     return (
@@ -121,9 +122,25 @@ const AvailableGames = () => {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {games.length > 0 ? (
-            games.map((game) => (
-              <div key={game.id} className="bg-white rounded-lg shadow-md p-6">
+          {games.length > 0 ? (games.map((game) => (
+            <div key={game.id} className="bg-white rounded-lg shadow-md overflow-hidden ">
+              {game.gameImage ? (
+                <div className="w-full h-48 relative overflow-hidden">
+                  <img
+                    src={game.gameImage}
+                    alt={game.name}
+                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-black bg-opacity-20 transition-opacity duration-300 opacity-0 group-hover:opacity-100"></div>
+                </div>
+              ) : (
+                <div className="w-full h-48 bg-gradient-to-r from-blue-100 to-blue-200 flex items-center justify-center">
+                  <svg className="w-16 h-16 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                </div>
+              )}
+              <div className="p-6">
                 <h2 className="text-xl font-semibold text-gray-800 mb-2">{game.name}</h2>
 
                 <div className="mb-4">
@@ -177,11 +194,11 @@ const AvailableGames = () => {
                   >
                     {game.availableSeats === 0 ? 'No Seats Available' : 'Request to Join'}
                   </button>
-                )}
-              </div>
-            ))
+                )}                </div>
+            </div>
+          ))
           ) : (
-            <div className="text-center text-gray-600">No games available</div>
+            <div className="text-center text-gray-600 p-6">No games available</div>
           )}
         </div>
       </div>

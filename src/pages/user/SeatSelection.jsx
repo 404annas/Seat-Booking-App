@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ListAllSeats, testBookSeat } from '../../API_handler';
+import { ListAllSeats, testBookSeat, GetGameById } from '../../API_handler';
 import Loader from '../../components/Loader/Loader';
 import toast from 'react-hot-toast';
 import ConfirmDialog from '../../components/ConfirmDialog/ConfirmDialog';
@@ -13,6 +13,7 @@ const SeatSelection = () => {
   const [showTestBookDialog, setShowTestBookDialog] = useState(false);
   const [currentUserId, setCurrentUserId] = useState(localStorage.getItem('userId'));
   const [userHasBooking, setUserHasBooking] = useState(false);
+  const [gameDetails, setGameDetails] = useState(null);
 
   const [seats, setSeats] = useState(
     Array.from({ length: 20 }, (_, i) => ({
@@ -39,45 +40,62 @@ const SeatSelection = () => {
 
   useEffect(() => {
     setLoading(true);
-    ListAllSeats(gameId)
-      .then((response) => {
-        console.log(response);
-        if (response.status === 200) {
-          const data = response.data;
-          const userSeat = data.find(seat => seat.userId?._id === currentUserId);
-          const hasBooking = !!userSeat;
+    Promise.all([
+      GetGameById(gameId),
+      ListAllSeats(gameId)
+    ]).then(([gameResponse, seatsResponse]) => {
+      if (gameResponse.status === 200) {
+        setGameDetails({
+          name: gameResponse.data.gameName,
+          description: gameResponse.data.description,
+          additionalInfo: gameResponse.data.additionalInfo,
+          universalGift: gameResponse.data.universalGift,
+          universalGiftImage: gameResponse.data.universalGiftImage,
+          gameImage: gameResponse.data.gameImage,
+          totalSeats: gameResponse.data.totalSeats
+        });
+      } else {
+        toast.error('Error fetching game details');
+      }
 
-          const updatedSeats = data.map((seat) => ({
-            id: seat.seatNumber,
-            status: hasBooking && !seat.isOccupied ? 'unavailable' :
-              seat.isOccupied ? 'booked' : 'available',
-            price: seat.price,
-            userId: seat.userId?._id || null
-          }));
+      if (seatsResponse.status === 200) {
+        const data = seatsResponse.data.seats;
+        const userSeat = data.find(seat => seat.userId?._id === currentUserId);
+        const hasBooking = !!userSeat;
 
-          setSeats(updatedSeats);
-          setUserHasBooking(hasBooking);
+        const updatedSeats = data.map((seat) => ({
+          id: seat.seatNumber,
+          status: hasBooking && !seat.isOccupied ? 'unavailable' :
+            seat.isOccupied ? 'booked' : 'available',
+          price: seat.price,
+          userId: seat.userId?._id || null,
+          gift: seat.gift || gameResponse.data.universalGift,
+          giftImage: seat.giftImage || gameResponse.data.universalGiftImage
+        }));
 
-          if (userSeat) {
-            toast.error('You have already booked Seat ' + userSeat.seatNumber + ' in this game');
-            setSelectedSeat(null);
-          }
-        } else {
-          console.error('Error fetching seats:', response.data.message);
+        setSeats(updatedSeats);
+        setUserHasBooking(hasBooking);
+
+        if (userSeat) {
+          toast.error('You have already booked Seat ' + userSeat.seatNumber + ' in this game');
+          setSelectedSeat(null);
         }
-      })
-      .catch((error) => {
-        console.error('Error fetching seats:', error);
-      }).finally(() => {
-        setLoading(false);
-      })
+      } else {
+        console.error('Error fetching seats:', seatsResponse.data.message);
+      }
+    }).catch((error) => {
+      console.error('Error:', error);
+      toast.error('Error loading game data');
+    }).finally(() => {
+      setLoading(false);
+    });
   }, [gameId, currentUserId]);
 
   const refreshSeatsData = async () => {
     try {
       const seatsResponse = await ListAllSeats(gameId);
       if (seatsResponse.status === 200) {
-        const updatedSeats = seatsResponse.data.map((seat) => ({
+        const updatedSeats = seatsResponse.data.seats.map((seat) => ({
           id: seat.seatNumber,
           status: seat.isOccupied ? 'booked' : 'available',
           price: seat.price,
@@ -196,16 +214,16 @@ const SeatSelection = () => {
         onConfirm={confirmTestBooking}
         title="Confirm Test Booking"
         message={`Are you sure you want to test book Seat ${selectedSeat}? (No payment required)`}
-      />
+      />{/* Seat Selection Section */}
       <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-md p-8">
         <div className="flex justify-between items-center mb-6">
-
           <h1 className="text-2xl font-bold text-gray-800 mb-6">Select Your Seat</h1>
           <button
             onClick={() => navigate('/games')}
-            className=' bg-black text-white w-24 h-10 rounded-lg  '
+            className='bg-black text-white w-24 h-10 rounded-lg'
           >Back</button>
-        </div>        <div className="grid grid-cols-3 gap-2 mb-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">          {seats.map((seat) => {
+        </div>
+        <div className="grid grid-cols-3 gap-2 mb-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">          {seats.map((seat) => {
           const isBooked = seat.status === 'booked';
           const isUsersBookedSeat = seat.userId === currentUserId;
           const isSelected = selectedSeat === seat.id;
@@ -291,8 +309,8 @@ const SeatSelection = () => {
                 onClick={handleBookSeat}
                 disabled={userHasBooking}
                 className={`w-full px-6 py-3 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-offset-2 ${userHasBooking
-                    ? 'bg-gray-400 cursor-not-allowed'
-                    : 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500'
+                  ? 'bg-gray-400 cursor-not-allowed'
+                  : 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500'
                   }`}
               >
                 {userHasBooking ? 'Already Booked' : 'Proceed to Payment'}
@@ -303,8 +321,8 @@ const SeatSelection = () => {
                 onClick={handleTestBooking}
                 disabled={userHasBooking}
                 className={`w-full px-6 py-3 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-offset-2 ${userHasBooking
-                    ? 'bg-gray-400 cursor-not-allowed'
-                    : 'bg-purple-600 hover:bg-purple-700 focus:ring-purple-500'
+                  ? 'bg-gray-400 cursor-not-allowed'
+                  : 'bg-purple-600 hover:bg-purple-700 focus:ring-purple-500'
                   }`}
               >
                 {userHasBooking ? 'Already Booked' : 'Test Book Seat (No Payment)'}
@@ -312,7 +330,73 @@ const SeatSelection = () => {
             </div>
           </div>
         )}
-      </div>
+      </div>      {/* Game Details Section */}
+      {gameDetails && (
+        <div className="mt-12 bg-white rounded-lg shadow-md overflow-hidden">
+          <div className="p-8">
+            <h2 className="text-2xl font-bold text-gray-800 mb-8">Game Details</h2>
+
+            {/* Game Image and Description Section */}
+            <div className="flex flex-col md:flex-row gap-8 mb-8">              {/* Game Image */}
+              {gameDetails.gameImage && (
+                <div className="md:w-2/5">
+                  <img
+                    src={gameDetails.gameImage}
+                    alt={gameDetails.name}
+                    className="w-full h-[300px] object-cover rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300"
+                  />
+                </div>
+              )}
+
+              {/* Description */}
+              {gameDetails.description && (
+                <div className="md:w-3/5">
+                  <h3 className="text-xl font-semibold text-gray-800 mb-4">Description</h3>
+                  <div
+                    className="prose max-w-none text-gray-600"
+                    dangerouslySetInnerHTML={{ __html: gameDetails.description }}
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* Additional Information and Gift Section */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {/* Additional Information Section */}
+              {gameDetails.additionalInfo && (
+                <div className="bg-gray-50 rounded-lg p-6">
+                  <h3 className="text-xl font-semibold text-gray-800 mb-4">Additional Information</h3>
+                  <div
+                    className="prose max-w-none text-gray-600"
+                    dangerouslySetInnerHTML={{ __html: gameDetails.additionalInfo }}
+                  />
+                </div>
+              )}
+
+              {/* Universal Gift Section */}
+              {(gameDetails.universalGift || gameDetails.universalGiftImage) && (
+                <div className="bg-gray-50 rounded-lg p-6">
+                  <h3 className="text-xl font-semibold text-gray-800 mb-4">Universal Gift</h3>
+                  <div className="space-y-4">
+                    {gameDetails.universalGiftImage && (
+                      <div className="flex justify-center">
+                        <img
+                          src={gameDetails.universalGiftImage}
+                          alt="Universal gift"
+                          className="w-64 h-64 object-cover rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300"
+                        />
+                      </div>
+                    )}
+                    {gameDetails.universalGift && (
+                      <p className="text-gray-600 text-center">{gameDetails.universalGift}</p>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
